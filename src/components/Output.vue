@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-title>Program Counter</q-card-title>
+    <q-card-title>Output</q-card-title>
     <q-card-separator/>
     <q-card-main>
       <bits :bits="bits"></bits>
@@ -13,12 +13,12 @@
 import Signals from "./Signals";
 import Bits from "./Bits";
 export default {
-  name: "PC",
+  name: "Output",
   props: ["signals"],
   components: { Signals, Bits },
   data() {
     return {
-      bits: new Array(4).fill(0)
+      bits: new Array(8).fill(0)
     };
   }
 };

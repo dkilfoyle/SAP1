@@ -4,6 +4,7 @@
     <q-card-separator/>
     <q-card-main>
       <q-table :data="ramTableData" :columns="ramTableColumns" dense></q-table>
+      <signals class="q-mt-md" :signals="signals"></signals>
     </q-card-main>
     <q-card-separator/>
     <q-card-actions>
@@ -16,8 +17,11 @@
 
 <script>
 var BitSet = require("bitset");
+import Signals from "./Signals";
 export default {
-  // name: 'ComponentName',
+  name: "RAM",
+  components: { Signals },
+  props: ["signals"],
   data() {
     return {
       displayFormat: "bits",
