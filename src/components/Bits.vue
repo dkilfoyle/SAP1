@@ -40,8 +40,8 @@ export default {
     },
     bitsTableData: function() {
       var x = {};
-      for (let i = this.bits.length - 1; i >= 0; i--) {
-        x["B" + i] = this.bits[i];
+      for (let i = 0; i < this.bits.length; i++) {
+        x["B" + i] = this.bits[this.bits.length - 1 - i];
       }
       x.Dec = parseInt(this.bits.join(), 10);
       x.Hex = parseInt(this.bits.join(), 16);

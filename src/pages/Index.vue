@@ -12,8 +12,11 @@
           <bus :bits="busBits"></bus>
           <control-bus class="q-mt-md" :signals="cbSignals"></control-bus>
           <controller
+            :CLK="CLK"
+            :CLKi="CLKi"
+            :CLR="CLR"
+            :CLRi="CLRi"
             :ringBits="ringBits"
-            :signals="conSignals"
             v-on:halfCycle="halfCycle"
             class="q-mt-md"
           ></controller>
@@ -62,24 +65,24 @@ export default {
   },
   data() {
     return {
-      ringBits: [1, 0, 0, 0, 0, 0],
       busBits: new Array(8).fill(0),
+      ringBits: [0, 0, 0, 0, 0, 0],
       CLK: 0,
       CLR: 0,
       CLKi: 1,
       CLRi: 1,
       Cp: 0,
       Ep: 0,
-      Lm: 0,
-      CE: 0,
-      Li: 0,
-      Ei: 0,
-      La: 0,
+      Lm: 1,
+      CE: 1,
+      Li: 1,
+      Ei: 1,
+      La: 1,
       Ea: 0,
       Su: 0,
       Eu: 0,
-      Lb: 0,
-      Lo: 0
+      Lb: 1,
+      Lo: 1
     };
   },
   computed: {
@@ -130,12 +133,104 @@ export default {
     },
     outSignals: function() {
       return { CLK: this.CLK, Lo: this.Lo };
+    },
+    TState: function() {
+      let msbi = this.ringBits.indexOf(1);
+      return 6 - msbi;
+    }
+  },
+  watch: {
+    CLK: function(newCLK, oldCLK) {
+      if (newCLK === 0 && oldCLK === 0) throw new Error("CLK same");
+      if (newCLK === 0) {
+        this.ringRotate();
+      }
+    },
+    TState: function(newT, oldT) {
+      switch (newT) {
+        case 1: // Address
+          this.Cp = 0;
+          this.Ep = 1; // active
+          this.Lm = 0; // active
+          this.CE = 1;
+          this.Li = 1;
+          this.Ei = 1;
+          this.La = 1;
+          this.Ea = 0;
+          this.Su = 0;
+          this.Eu = 0;
+          this.Lb = 1;
+          this.Lo = 1;
+          break;
+        case 2: // Increment
+          this.Cp = 1; // active
+          this.Ep = 0;
+          this.Lm = 1;
+          this.CE = 1;
+          this.Li = 1;
+          this.Ei = 1;
+          this.La = 1;
+          this.Ea = 0;
+          this.Su = 0;
+          this.Eu = 0;
+          this.Lb = 1;
+          this.Lo = 1;
+          break;
+        case 3: // Memory
+          this.Cp = 0;
+          this.Ep = 0;
+          this.Lm = 1;
+          this.CE = 0; // active
+          this.Li = 1;
+          this.Ei = 1;
+          this.La = 1;
+          this.Ea = 0;
+          this.Su = 0;
+          this.Eu = 0;
+          this.Lb = 1;
+          this.Lo = 1;
+          break;
+      }
     }
   },
   methods: {
+    reset: function() {
+      this.busBits = new Array(8).fill(0);
+      this.ringBits = [0, 0, 0, 0, 0, 0];
+      this.CLK = 0;
+      this.CLR = 0;
+      this.CLKi = 1;
+      this.CLRi = 1;
+      this.Cp = 0;
+      this.Ep = 0;
+      this.Lm = 1;
+      this.CE = 1;
+      this.Li = 1;
+      this.Ei = 1;
+      this.La = 1;
+      this.Ea = 0;
+      this.Su = 0;
+      this.Eu = 0;
+      this.Lb = 1;
+      this.Lo = 1;
+    },
     halfCycle: function() {
       this.CLK = this.CLK === 1 ? 0 : 1;
       this.CLKi = this.CLK === 1 ? 0 : 1;
+    },
+    ringRotate: function() {
+      let msbi = this.ringBits.indexOf(1);
+      if (msbi === -1) {
+        // first rotation
+        this.ringBits.splice(5, 1, 1);
+        return;
+      }
+      this.ringBits.splice(msbi, 1, 0);
+      if (msbi === 0) {
+        this.ringBits.splice(5, 1, 1);
+      } else {
+        this.ringBits.splice(msbi - 1, 1, 1);
+      }
     }
   }
 };

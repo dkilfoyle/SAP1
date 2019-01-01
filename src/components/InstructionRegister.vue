@@ -9,10 +9,6 @@
       <bits :bits="addressBits"></bits>
       <signals :signals="signals" class="q-mt-md"></signals>
     </q-card-main>
-    <q-card-separator/>
-    <q-card-actions>
-      <q-btn flat label="Rotate" @click="ringRotate"></q-btn>
-    </q-card-actions>
   </q-card>
 </template>
 
@@ -38,15 +34,6 @@ export default {
       // if (bits.toString(10) === "14") return "OUT"; // 1110
       // if (bits.toString(10) === "15") return "LDA"; // 1111
       // return "XXX";
-    },
-    ringRotate: function() {
-      let msbi = this.ringBits.indexOf(1);
-      this.ringBits.splice(msbi, 1, 0);
-      if (msbi === 5) {
-        this.ringBits.splice(0, 1, 1);
-      } else {
-        this.ringBits.splice(msbi + 1, 1, 1);
-      }
     }
   }
 };

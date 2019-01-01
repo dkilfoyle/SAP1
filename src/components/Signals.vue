@@ -2,7 +2,7 @@
   <div>
     <q-table :data="sigTableData" :columns="sigTableColumns" dense hide-bottom>
       <q-td
-        v-bind:style="{color: isActive(props.col.name) ? 'red' : 'black'}"
+        v-bind:style="{color: isActive(props.col.name) ? 'white' : 'black', background: isActive(props.col.name) ? 'black' : 'white'}"
         slot="body-cell"
         slot-scope="props"
         :props="props"
