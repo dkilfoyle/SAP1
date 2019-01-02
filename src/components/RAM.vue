@@ -1,34 +1,38 @@
 <template>
-  <q-card>
+  <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>RAM</q-card-title>
     <q-card-separator/>
     <q-card-main>
       <q-table :data="ramTableData" :columns="ramTableColumns" dense></q-table>
-      <signals class="q-mt-md" :signals="signals"></signals>
+      <signals class="q-mt-md" :signals="cBus"></signals>
     </q-card-main>
-    <q-card-separator/>
-    <q-card-actions>
-      <q-btn flat label="Bits" @click="displayFormat = 'bits'"></q-btn>
-      <q-btn flat label="Decimal" @click="displayFormat = 'dec'"></q-btn>
-      <q-btn flat label="Hex" @click="displayFormat = 'hex'"></q-btn>
-    </q-card-actions>
   </q-card>
 </template>
 
 <script>
-var BitSet = require("bitset");
 import Signals from "./Signals";
 export default {
   name: "RAM",
   components: { Signals },
-  props: ["signals"],
+  props: ["cBus", "ramBits", "marBits"],
   data() {
-    return {
-      displayFormat: "bits",
-      bits: new Array(16).fill(new BitSet("00000000"))
-    };
+    return {};
+  },
+  watch: {
+    "cBus.CE": function(newCE, oldCE) {
+      if (newCE === 0) {
+        console.log("RAM: CE: loadRamToBus");
+        this.$emit(
+          "loadRamToBus",
+          this.ramBits[parseInt(this.marBits.join(""), 2)]
+        );
+      }
+    }
   },
   computed: {
+    isActive: function() {
+      return this.cBus.CE === 0;
+    },
     ramTableColumns: function() {
       return [
         { name: "address", label: "Address", field: "address" },
@@ -49,22 +53,26 @@ export default {
       for (let i = 0; i < 8; i++) {
         let rowName =
           i.toString().padStart(2, "0") +
-          ":" +
+          "_" +
           i.toString(2).padStart(4, "0") +
-          ":" +
+          "_" +
           i.toString(16);
         x[i] = {
           address: rowName,
-          B7: this.bits[i].get(7),
-          B6: this.bits[i].get(6),
-          B5: this.bits[i].get(5),
-          B4: this.bits[i].get(4),
-          B3: this.bits[i].get(3),
-          B2: this.bits[i].get(2),
-          B1: this.bits[i].get(1),
-          B0: this.bits[i].get(0),
-          Dec: this.bits[i].toString(10).padStart(2, "0"),
-          Hex: this.bits[i].toString(16).padStart(2, "0")
+          B7: this.ramBits[i][7],
+          B6: this.ramBits[i][6],
+          B5: this.ramBits[i][5],
+          B4: this.ramBits[i][4],
+          B3: this.ramBits[i][3],
+          B2: this.ramBits[i][2],
+          B1: this.ramBits[i][1],
+          B0: this.ramBits[i][0],
+          Dec: parseInt(this.ramBits[i].join(""), 2)
+            .toString()
+            .padStart(2, "0"),
+          Hex: parseInt(this.ramBits[i].join(""), 2)
+            .toString(16)
+            .padStart(2, "0")
         };
       }
       return x;

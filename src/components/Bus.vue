@@ -3,7 +3,7 @@
     <q-card-title>Bus</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="bits"></bits>
+      <bits :bits="busBits"></bits>
     </q-card-main>
   </q-card>
 </template>
@@ -13,10 +13,9 @@ import Bits from "./Bits";
 export default {
   name: "Bus",
   components: { Bits },
+  props: ["busBits"],
   data() {
-    return {
-      bits: new Array(8).fill(0)
-    };
+    return {};
   }
 };
 </script>

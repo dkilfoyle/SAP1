@@ -1,5 +1,5 @@
 <template>
-  <q-card>
+  <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>Output</q-card-title>
     <q-card-separator/>
     <q-card-main>
@@ -20,6 +20,11 @@ export default {
     return {
       bits: new Array(8).fill(0)
     };
+  },
+  computed: {
+    isActive: function() {
+      return this.Lo === 0;
+    }
   }
 };
 </script>

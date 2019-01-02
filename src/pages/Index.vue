@@ -3,29 +3,25 @@
     <div>
       <div class="row gutter-md">
         <div class="col">
-          <program-counter class="q-mb-md" :signals="pcSignals"></program-counter>
-          <memory-address-register class="q-mb-md" :signals="marSignals"></memory-address-register>
-          <r-a-m :signals="ramSignals" class="q-mb-md"></r-a-m>
-          <instruction-register :signals="irSignals" class="q-mb-md"></instruction-register>
+          <program-counter :cBus="pcSignals" @pushToBus="pushToBus" class="q-mb-md"></program-counter>
+          <r-a-m-block :cBus="rbSignals" :busBits="busBits" @pushToBus="pushToBus"></r-a-m-block>
+          <instruction-register :cBus="irSignals" class="q-mb-md"></instruction-register>
         </div>
         <div class="col">
-          <bus :bits="busBits"></bus>
-          <control-bus class="q-mt-md" :signals="cbSignals"></control-bus>
+          <bus :busBits="busBits"></bus>
+          <control-bus class="q-mt-md" :cBus="cbSignals"></control-bus>
           <controller
-            :CLK="CLK"
-            :CLKi="CLKi"
-            :CLR="CLR"
-            :CLRi="CLRi"
+            :cBus="conSignals"
             :ringBits="ringBits"
             v-on:halfCycle="halfCycle"
             class="q-mt-md"
           ></controller>
         </div>
         <div class="col">
-          <accumulator :signals="accSignals" class="q-mb-md"></accumulator>
-          <a-l-u :signals="aluSignals" class="q-mb-md"></a-l-u>
-          <b-register :signals="brSignals" class="q-mb-md"></b-register>>
-          <output :signals="outSignals" class="q-mb-md"></output>
+          <accumulator :cBus="accSignals" class="q-mb-md"></accumulator>
+          <a-l-u :cBus="aluSignals" class="q-mb-md"></a-l-u>
+          <b-register :cBus="brSignals" class="q-mb-md"></b-register>>
+          <output :cBus="outSignals" class="q-mb-md"></output>
         </div>
       </div>
     </div>
@@ -37,8 +33,7 @@
 
 <script>
 import ProgramCounter from "../components/ProgramCounter";
-import RAM from "../components/RAM";
-import MemoryAddressRegister from "../components/MemoryAddressRegister";
+import RAMBlock from "../components/RAMBlock";
 import Bus from "../components/Bus";
 import ControlBus from "../components/ControlBus";
 import InstructionRegister from "../components/InstructionRegister";
@@ -52,8 +47,7 @@ export default {
   name: "PageIndex",
   components: {
     ProgramCounter,
-    RAM,
-    MemoryAddressRegister,
+    RAMBlock,
     Bus,
     ControlBus,
     InstructionRegister,
@@ -67,9 +61,9 @@ export default {
     return {
       busBits: new Array(8).fill(0),
       ringBits: [0, 0, 0, 0, 0, 0],
-      CLK: 0,
+      CLK: 1,
       CLR: 0,
-      CLKi: 1,
+      CLKi: 0,
       CLRi: 1,
       Cp: 0,
       Ep: 0,
@@ -86,15 +80,6 @@ export default {
     };
   },
   computed: {
-    pcSignals: function() {
-      return { Cp: this.Cp, CLKi: this.CLKi, CLRi: this.CLRi, Ep: this.Ep };
-    },
-    ramSignals: function() {
-      return { CE: this.CE };
-    },
-    marSignals: function() {
-      return { Lm: this.Lm, CLK: this.CLK };
-    },
     cbSignals: function() {
       return {
         Cp: this.Cp,
@@ -110,6 +95,12 @@ export default {
         Lb: this.Lb,
         Lo: this.Lo
       };
+    },
+    pcSignals: function() {
+      return { CLKi: this.CLKi, CLRi: this.CLRi, Cp: this.Cp, Ep: this.Ep };
+    },
+    rbSignals: function() {
+      return { CLK: this.CLK, Lm: this.Lm, CE: this.CE };
     },
     conSignals: function() {
       return {
@@ -223,14 +214,23 @@ export default {
       if (msbi === -1) {
         // first rotation
         this.ringBits.splice(5, 1, 1);
-        return;
-      }
-      this.ringBits.splice(msbi, 1, 0);
-      if (msbi === 0) {
-        this.ringBits.splice(5, 1, 1);
       } else {
-        this.ringBits.splice(msbi - 1, 1, 1);
+        this.ringBits.splice(msbi, 1, 0);
+        if (msbi === 0) {
+          this.ringBits.splice(5, 1, 1);
+        } else {
+          this.ringBits.splice(msbi - 1, 1, 1);
+        }
       }
+      console.log("Index ringRotate: ", this.TState);
+    },
+    pushToBus: function(payloadBits) {
+      console.log("pushToBus: ", payloadBits);
+      this.busBits.splice(
+        this.busBits.length - payloadBits.length,
+        payloadBits.length,
+        ...payloadBits
+      );
     }
   }
 };

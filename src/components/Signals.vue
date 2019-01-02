@@ -1,17 +1,15 @@
 <template>
   <div>
     <q-table :data="sigTableData" :columns="sigTableColumns" dense hide-bottom>
-      <q-td
-        v-bind:style="{color: isActive(props.col.name) ? 'white' : 'black', background: isActive(props.col.name) ? 'black' : 'white'}"
-        slot="body-cell"
-        slot-scope="props"
-        :props="props"
-      >{{props.row[props.col.name]}}</q-td>
+      <q-td slot="body-cell" slot-scope="props" :props="props">
+        <q-chip small :color="isActive(props.col.name) ? 'primary' : 'secondary'">{{props.value}}</q-chip>
+      </q-td>
     </q-table>
   </div>
 </template>
 
 <script>
+// >{{props.row[props.col.name]}}</q-td>
 export default {
   name: "Signals",
   data() {
@@ -39,7 +37,9 @@ export default {
   props: ["signals"],
   computed: {
     sigTableColumns: function() {
-      return Object.keys(this.signals).map(x => this.signalList[x]);
+      return Object.keys(this.signals)
+        .filter(x => x !== "__index")
+        .map(x => this.signalList[x]);
     },
     sigTableData: function() {
       return [this.signals];

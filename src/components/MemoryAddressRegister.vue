@@ -1,10 +1,10 @@
 <template>
-  <q-card>
+  <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>Memory Address Register</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="bits"></bits>
-      <signals class="q-mt-md" :signals="signals"></signals>
+      <bits :bits="marBits"></bits>
+      <signals class="q-mt-md" :signals="cBus"></signals>
     </q-card-main>
   </q-card>
 </template>
@@ -14,12 +14,20 @@ import Signals from "./Signals";
 import Bits from "./Bits";
 export default {
   name: "MAR",
-  props: ["signals"],
+  props: ["cBus", "busBits", "marBits"],
   components: { Signals, Bits },
   data() {
-    return {
-      bits: new Array(4).fill(0)
-    };
+    return {};
+  },
+  computed: {
+    isActive: function() {
+      return this.cBus.Lm === 0;
+    }
+  },
+  watch: {
+    "cBus.CLK": function(newCLK, oldCLK) {
+      if (newCLK === 1 && this.cBus.Lm === 0) this.$emit("loadBusToMar");
+    }
   }
 };
 </script>
