@@ -1,13 +1,13 @@
 <template>
   <div>
     <memory-address-register
-      :cBus="cBus"
+      :cBus="marSignals"
       :marBits="marBits"
       :busBits="busBits"
       @loadBusToMar="loadBusToMar"
     ></memory-address-register>
     <r-a-m
-      :cBus="cBus"
+      :cBus="ramSignals"
       :marBits="marBits"
       :ramBits="ramBits"
       :busBits="busBits"
@@ -20,6 +20,9 @@
 <script>
 import MemoryAddressRegister from "./MemoryAddressRegister";
 import RAM from "./RAM";
+function getBits(strBits) {
+  return strBits.split("").map(x => parseInt(x));
+}
 export default {
   name: "RAMBlock",
   components: { MemoryAddressRegister, RAM },
@@ -31,7 +34,24 @@ export default {
     };
   },
   mounted: function() {
-    this.ramBits.splice(0, 1, [1, 0, 1, 0, 1, 0, 1, 0]);
+    this.ramBits.splice(0, 1, getBits("00001001"));
+    this.ramBits.splice(1, 1, getBits("00011010"));
+    this.ramBits.splice(2, 1, getBits("00011011"));
+    this.ramBits.splice(3, 1, getBits("00101100"));
+    this.ramBits.splice(4, 1, getBits("11100000"));
+    this.ramBits.splice(5, 1, getBits("11110000"));
+    this.ramBits.splice(9, 1, getBits("00010000"));
+    this.ramBits.splice(10, 1, getBits("00010100"));
+    this.ramBits.splice(11, 1, getBits("00011000"));
+    this.ramBits.splice(12, 1, getBits("00100000"));
+  },
+  computed: {
+    ramSignals: function() {
+      return { CE: this.cBus.CE };
+    },
+    marSignals: function() {
+      return { Lm: this.cBus.Lm, CLK: this.cBus.CLK };
+    }
   },
   methods: {
     loadBusToMar: function() {

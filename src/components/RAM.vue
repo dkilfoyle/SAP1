@@ -50,7 +50,8 @@ export default {
     },
     ramTableData: function() {
       var x = [];
-      for (let i = 0; i < 8; i++) {
+      var bData = false;
+      for (let i = 0; i < 16; i++) {
         let rowName =
           i.toString().padStart(2, "0") +
           "_" +
@@ -59,23 +60,36 @@ export default {
           i.toString(16);
         x[i] = {
           address: rowName,
-          B7: this.ramBits[i][7],
-          B6: this.ramBits[i][6],
-          B5: this.ramBits[i][5],
-          B4: this.ramBits[i][4],
-          B3: this.ramBits[i][3],
-          B2: this.ramBits[i][2],
-          B1: this.ramBits[i][1],
-          B0: this.ramBits[i][0],
-          Dec: parseInt(this.ramBits[i].join(""), 2)
-            .toString()
-            .padStart(2, "0"),
+          B7: this.ramBits[i][0],
+          B6: this.ramBits[i][1],
+          B5: this.ramBits[i][2],
+          B4: this.ramBits[i][3],
+          B3: this.ramBits[i][4],
+          B2: this.ramBits[i][5],
+          B1: this.ramBits[i][6],
+          B0: this.ramBits[i][7],
+          Dec: bData
+            ? parseInt(this.ramBits[i].join(""), 2)
+                .toString()
+                .padStart(2, "0")
+            : this.getInstruction(this.ramBits[i].slice(0, 4).join("")),
           Hex: parseInt(this.ramBits[i].join(""), 2)
             .toString(16)
             .padStart(2, "0")
         };
+        if (this.ramBits[i].slice(0, 4).join("") === "1111") bData = true;
       }
       return x;
+    }
+  },
+  methods: {
+    getInstruction: function(insBitsStr) {
+      if (insBitsStr === "0000") return "LDA"; // 0000
+      if (insBitsStr === "0001") return "ADD"; // 0001
+      if (insBitsStr === "0010") return "SUB"; // 0010
+      if (insBitsStr === "1110") return "OUT"; // 1110
+      if (insBitsStr === "1111") return "HLT"; // 1111
+      return "XXX";
     }
   }
 };

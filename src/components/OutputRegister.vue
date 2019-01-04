@@ -4,7 +4,7 @@
     <q-card-separator/>
     <q-card-main>
       <bits :bits="bits"></bits>
-      <signals class="q-mt-md" :signals="signals"></signals>
+      <signals class="q-mt-md" :signals="cBus"></signals>
     </q-card-main>
   </q-card>
 </template>
@@ -13,8 +13,8 @@
 import Signals from "./Signals";
 import Bits from "./Bits";
 export default {
-  name: "Output",
-  props: ["signals"],
+  name: "OutputRegister",
+  props: ["cBus"],
   components: { Signals, Bits },
   data() {
     return {
@@ -23,7 +23,7 @@ export default {
   },
   computed: {
     isActive: function() {
-      return this.Lo === 0;
+      return this.cBus.Lo === 0;
     }
   }
 };

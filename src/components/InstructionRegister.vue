@@ -3,7 +3,7 @@
     <q-card-title>Instruction Register</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <p>Instruction</p>
+      <p>Instruction: {{instruction}}</p>
       <bits :bits="instructionBits"></bits>
       <p class="q-mt-md">Address</p>
       <bits :bits="addressBits"></bits>
@@ -15,9 +15,10 @@
 <script>
 import Signals from "./Signals";
 import Bits from "./Bits";
+import { getInstruction } from "./bitFunctions";
 export default {
-  name: "ProgramCounter",
-  props: ["cBus"],
+  name: "IntructionRegister",
+  props: ["cBus", "busBits", "irBits"],
   components: { Signals, Bits },
   data() {
     return {
@@ -27,20 +28,24 @@ export default {
   },
   computed: {
     isActive: function() {
-      return this.cBus.CLR === 1 || this.cBus.Li === 0 || this.cBus.Ei === 1;
+      return this.cBus.CLR === 1 || this.cBus.Li === 0 || this.cBus.Ei === 0;
+    },
+    instruction: function() {
+      return getInstruction(this.irBits);
     }
   },
-  methods: {
-    getInstruction: function(bits) {
-      return "XXX";
-      // if (bits.toString(10) === "0") return "LDA"; // 0000
-      // if (bits.toString(10) === "1") return "ADD"; // 0001
-      // if (bits.toString(10) === "2") return "SUB"; // 0010
-      // if (bits.toString(10) === "14") return "OUT"; // 1110
-      // if (bits.toString(10) === "15") return "LDA"; // 1111
-      // return "XXX";
+  watch: {
+    "cBus.CLK": function(newCLK, oldCLK) {
+      if (newCLK === 1 && this.cBus.Li === 0) {
+        this.$emit("loadIrBits", this.busBits);
+      }
+    },
+    irBits: function() {
+      this.instructionBits.splice(0, 4, ...this.irBits.slice(0, 4));
+      this.addressBits.splice(0, 4, ...this.irBits.slice(4, 8));
     }
-  }
+  },
+  methods: {}
 };
 </script>
 

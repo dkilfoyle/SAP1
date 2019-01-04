@@ -43,8 +43,12 @@ export default {
       for (let i = 0; i < this.bits.length; i++) {
         x["B" + i] = this.bits[this.bits.length - 1 - i];
       }
-      x.Dec = parseInt(this.bits.join(), 10);
-      x.Hex = parseInt(this.bits.join(), 16);
+      x.Dec = parseInt(this.bits.join(""), 2)
+        .toString(10)
+        .padStart(2, "0");
+      x.Hex = parseInt(this.bits.join(""), 2)
+        .toString(16)
+        .padStart(2, "0");
       return [x];
     }
   }

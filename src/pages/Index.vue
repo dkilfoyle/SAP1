@@ -5,23 +5,21 @@
         <div class="col">
           <program-counter :cBus="pcSignals" @pushToBus="pushToBus" class="q-mb-md"></program-counter>
           <r-a-m-block :cBus="rbSignals" :busBits="busBits" @pushToBus="pushToBus"></r-a-m-block>
-          <instruction-register :cBus="irSignals" class="q-mb-md"></instruction-register>
         </div>
         <div class="col">
           <bus :busBits="busBits"></bus>
-          <control-bus class="q-mt-md" :cBus="cbSignals"></control-bus>
-          <controller
-            :cBus="conSignals"
-            :ringBits="ringBits"
-            v-on:halfCycle="halfCycle"
+          <control-block
+            :cBus="cbSignals"
+            :conSignals="conSignals"
+            :busBits="busBits"
+            @halfCycle="halfCycle"
+            @setCBus="setCBus"
             class="q-mt-md"
-          ></controller>
+          ></control-block>
         </div>
         <div class="col">
-          <accumulator :cBus="accSignals" class="q-mb-md"></accumulator>
-          <a-l-u :cBus="aluSignals" class="q-mb-md"></a-l-u>
-          <b-register :cBus="brSignals" class="q-mb-md"></b-register>>
-          <output :cBus="outSignals" class="q-mb-md"></output>
+          <a-l-u-block :cBus="abSignals" :busBits="busBits"/>
+          <output-register :cBus="outSignals" class="q-mb-md"></output-register>
         </div>
       </div>
     </div>
@@ -35,13 +33,9 @@
 import ProgramCounter from "../components/ProgramCounter";
 import RAMBlock from "../components/RAMBlock";
 import Bus from "../components/Bus";
-import ControlBus from "../components/ControlBus";
-import InstructionRegister from "../components/InstructionRegister";
-import Controller from "../components/Controller";
-import Accumulator from "../components/Accumulator";
-import ALU from "../components/ALU";
-import BRegister from "../components/BRegister";
-import Output from "../components/Output";
+import ControlBlock from "../components/ControlBlock";
+import ALUBlock from "../components/ALUBlock";
+import OutputRegister from "../components/OutputRegister";
 
 export default {
   name: "PageIndex",
@@ -49,18 +43,13 @@ export default {
     ProgramCounter,
     RAMBlock,
     Bus,
-    ControlBus,
-    InstructionRegister,
-    Controller,
-    ALU,
-    Accumulator,
-    BRegister,
-    Output
+    ControlBlock,
+    ALUBlock,
+    OutputRegister
   },
   data() {
     return {
       busBits: new Array(8).fill(0),
-      ringBits: [0, 0, 0, 0, 0, 0],
       CLK: 1,
       CLR: 0,
       CLKi: 0,
@@ -110,84 +99,25 @@ export default {
         CLRi: this.CLRi
       };
     },
-    irSignals: function() {
-      return { CLK: this.CLK, CLR: this.CLR, Li: this.Li, Ei: this.Ei };
-    },
-    accSignals: function() {
-      return { CLK: this.CLK, Ea: this.Ea, La: this.La };
-    },
-    aluSignals: function() {
-      return { Su: this.Su, Eu: this.Eu };
-    },
-    brSignals: function() {
-      return { CLK: this.CLK, Lb: this.Lb };
+    abSignals: function() {
+      return {
+        CLK: this.CLK,
+        Ea: this.Ea,
+        La: this.La,
+        Lb: this.Lb,
+        Su: this.Su,
+        Eu: this.Eu
+      };
     },
     outSignals: function() {
       return { CLK: this.CLK, Lo: this.Lo };
-    },
-    TState: function() {
-      let msbi = this.ringBits.indexOf(1);
-      return 6 - msbi;
     }
   },
-  watch: {
-    CLK: function(newCLK, oldCLK) {
-      if (newCLK === 0 && oldCLK === 0) throw new Error("CLK same");
-      if (newCLK === 0) {
-        this.ringRotate();
-      }
-    },
-    TState: function(newT, oldT) {
-      switch (newT) {
-        case 1: // Address
-          this.Cp = 0;
-          this.Ep = 1; // active
-          this.Lm = 0; // active
-          this.CE = 1;
-          this.Li = 1;
-          this.Ei = 1;
-          this.La = 1;
-          this.Ea = 0;
-          this.Su = 0;
-          this.Eu = 0;
-          this.Lb = 1;
-          this.Lo = 1;
-          break;
-        case 2: // Increment
-          this.Cp = 1; // active
-          this.Ep = 0;
-          this.Lm = 1;
-          this.CE = 1;
-          this.Li = 1;
-          this.Ei = 1;
-          this.La = 1;
-          this.Ea = 0;
-          this.Su = 0;
-          this.Eu = 0;
-          this.Lb = 1;
-          this.Lo = 1;
-          break;
-        case 3: // Memory
-          this.Cp = 0;
-          this.Ep = 0;
-          this.Lm = 1;
-          this.CE = 0; // active
-          this.Li = 1;
-          this.Ei = 1;
-          this.La = 1;
-          this.Ea = 0;
-          this.Su = 0;
-          this.Eu = 0;
-          this.Lb = 1;
-          this.Lo = 1;
-          break;
-      }
-    }
-  },
+
+  TState: function(newT, oldT) {},
   methods: {
     reset: function() {
       this.busBits = new Array(8).fill(0);
-      this.ringBits = [0, 0, 0, 0, 0, 0];
       this.CLK = 0;
       this.CLR = 0;
       this.CLKi = 1;
@@ -209,20 +139,19 @@ export default {
       this.CLK = this.CLK === 1 ? 0 : 1;
       this.CLKi = this.CLK === 1 ? 0 : 1;
     },
-    ringRotate: function() {
-      let msbi = this.ringBits.indexOf(1);
-      if (msbi === -1) {
-        // first rotation
-        this.ringBits.splice(5, 1, 1);
-      } else {
-        this.ringBits.splice(msbi, 1, 0);
-        if (msbi === 0) {
-          this.ringBits.splice(5, 1, 1);
-        } else {
-          this.ringBits.splice(msbi - 1, 1, 1);
-        }
-      }
-      console.log("Index ringRotate: ", this.TState);
+    setCBus: function(payload) {
+      this.Cp = payload.Cp;
+      this.Ep = payload.Ep;
+      this.Lm = payload.Lm;
+      this.CE = payload.CE;
+      this.Li = payload.Li;
+      this.Ei = payload.Ei;
+      this.La = payload.La;
+      this.Ea = payload.Ea;
+      this.Su = payload.Su;
+      this.Eu = payload.Eu;
+      this.Lb = payload.Lb;
+      this.Lo = payload.Lo;
     },
     pushToBus: function(payloadBits) {
       console.log("pushToBus: ", payloadBits);
