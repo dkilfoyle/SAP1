@@ -5,6 +5,14 @@
     <q-card-main>
       <bits :bits="bits"></bits>
       <signals class="q-mt-md" :signals="cBus"></signals>
+      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
+        <q-alert
+          type="info"
+          :icon="message.icon"
+          v-if="message !== ''"
+          class="q-mt-md"
+        >{{message.msg}}</q-alert>
+      </transition>
     </q-card-main>
   </q-card>
 </template>
@@ -24,11 +32,27 @@ export default {
   computed: {
     isActive: function() {
       return this.cBus.Cp === 1 || this.cBus.Ep === 1;
+    },
+    message: function() {
+      if (this.cBus.Ep === 1)
+        return {
+          icon: "arrow_forward",
+          msg: "Push to bus: " + this.bits.join("")
+        };
+      if (this.cBus.Cp === 1 && this.cBus.CLKi === 0)
+        return {
+          icon: "arrow_downward",
+          msg: "Incremented: " + this.bits.join("")
+        };
+      return "";
     }
   },
   watch: {
     "cBus.Ep": function(newEp, oldEp) {
-      this.$emit("pushToBus", this.bits);
+      if (this.cBus.Ep === 1) {
+        console.log("PC pushToBus", this.bits);
+        this.$emit("pushToBus", this.bits);
+      }
     },
     "cBus.CLKi": function(newCLKi, oldCLKi) {
       if (this.cBus.Cp === 1 && newCLKi === 0) this.increment();
@@ -36,13 +60,12 @@ export default {
   },
   methods: {
     increment: function() {
-      let i = parseInt(this.bits.join(), 2);
+      let i = parseInt(this.bits.join(""), 2);
       let x = (i + 1)
         .toString(2)
         .padStart(4, "0")
         .split("");
       this.bits = x.map(x => parseInt(x));
-      console.log("PC increment: ", this.bits);
     }
   }
 };

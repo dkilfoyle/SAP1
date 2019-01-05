@@ -61,7 +61,8 @@ module.exports = function(ctx) {
         "QTr",
         "QTd",
         "QCheckbox",
-        "QChip"
+        "QChip",
+        "QAlert"
       ],
       directives: ["Ripple"],
       // Quasar plugins
@@ -70,7 +71,7 @@ module.exports = function(ctx) {
       // i18n: 'de' // Quasar language
     },
     // animations: 'all' --- includes all animations
-    animations: [],
+    animations: ["fadeIn", "fadeOut"],
     ssr: {
       pwa: false
     },

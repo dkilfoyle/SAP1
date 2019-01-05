@@ -7,19 +7,18 @@
           <r-a-m-block :cBus="rbSignals" :busBits="busBits" @pushToBus="pushToBus"></r-a-m-block>
         </div>
         <div class="col">
-          <bus :busBits="busBits"></bus>
           <control-block
             :cBus="cbSignals"
             :conSignals="conSignals"
             :busBits="busBits"
             @halfCycle="halfCycle"
             @setCBus="setCBus"
-            class="q-mt-md"
           ></control-block>
+          <bus :busBits="busBits" :cBus="busSignals" class="q-mt-md"></bus>
         </div>
         <div class="col">
-          <a-l-u-block :cBus="abSignals" :busBits="busBits"/>
-          <output-register :cBus="outSignals" class="q-mb-md"></output-register>
+          <a-l-u-block :cBus="abSignals" :busBits="busBits" @pushToBus="pushToBus"/>
+          <output-register :cBus="outSignals" :busBits="busBits" class="q-mt-md"></output-register>
         </div>
       </div>
     </div>
@@ -99,6 +98,11 @@ export default {
         CLRi: this.CLRi
       };
     },
+    busSignals: function() {
+      return {
+        CLK: this.CLK
+      };
+    },
     abSignals: function() {
       return {
         CLK: this.CLK,
@@ -114,7 +118,6 @@ export default {
     }
   },
 
-  TState: function(newT, oldT) {},
   methods: {
     reset: function() {
       this.busBits = new Array(8).fill(0);

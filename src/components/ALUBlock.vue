@@ -5,10 +5,23 @@
       :accBits="accBits"
       :busBits="busBits"
       @loadBusToACC="loadBusToACC"
-      @loadACCToBus="loadACCToBus"
+      @pushACCToBus="pushACCToBus"
     />
-    <a-l-u :cBus="aluSignals" :brBits="brBits" class="q-mt-md"/>
-    <b-register :cBus="brSignals" :brBits="brBits" :busBits="busBits" class="q-mt-md"/>
+    <a-l-u
+      :cBus="aluSignals"
+      :accBits="accBits"
+      :brBits="brBits"
+      :aluBits="aluBits"
+      @loadALUandPushToBus="loadALUandPushToBus"
+      class="q-mt-md"
+    />
+    <b-register
+      :cBus="brSignals"
+      :brBits="brBits"
+      :busBits="busBits"
+      @loadBusToB="loadBusToB"
+      class="q-mt-md"
+    />
   </div>
 </template>
 
@@ -49,7 +62,15 @@ export default {
     loadBusToACC() {
       this.accBits.splice(0, 8, ...this.busBits);
     },
-    loadACCToBus() {
+    loadBusToB() {
+      this.brBits.splice(0, 8, ...this.busBits);
+    },
+    loadALUandPushToBus(payload) {
+      console.log("ALU pushToBus", payload);
+      this.aluBits.splice(0, 8, ...payload);
+      this.$emit("pushToBus", this.aluBits);
+    },
+    pushACCToBus() {
       this.$emit("pushToBus", this.accBits);
     }
   }

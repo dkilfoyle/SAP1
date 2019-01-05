@@ -1,13 +1,6 @@
 <template>
   <div>
-    <q-table :data="bitsTableData" :columns="bitsTableColumns" dense hide-bottom>
-      <!-- <q-td
-        v-bind:style="{color: isActive(props.col.name) ? 'red' : 'black'}"
-        slot="body-cell"
-        slot-scope="props"
-        :props="props"
-      >{{props.row[props.col.name]}}</q-td>-->
-    </q-table>
+    <q-table :data="bitsTableData" :columns="bitsTableColumns" dense hide-bottom></q-table>
   </div>
 </template>
 
@@ -17,31 +10,49 @@ export default {
   data() {
     return {
       allColumns: [
-        { name: "B7", label: "7", field: "B7" },
-        { name: "B6", label: "6", field: "B6" },
-        { name: "B5", label: "5", field: "B5" },
-        { name: "B4", label: "4", field: "B4" },
-        { name: "B3", label: "3", field: "B3" },
-        { name: "B2", label: "2", field: "B2" },
-        { name: "B1", label: "1", field: "B1" },
-        { name: "B0", label: "0", field: "B0" },
+        { name: "rowname", label: "", field: "rowname" },
+        { name: "bits", label: "Bits", field: "bits" },
         { name: "Dec", label: "Dec", field: "Dec" },
         { name: "Hex", label: "Hex", field: "Hex" }
       ]
     };
   },
-  // props: ["bits", "showNum"],
-  props: { bits: Array, showNum: { type: Boolean, default: true } },
+  props: {
+    bits: Array,
+    showNum: { type: Boolean, default: true },
+    precalculated: { type: Object, default: undefined },
+    rowname: { type: String, default: undefined }
+  },
   computed: {
     bitsTableColumns: function() {
-      return this.allColumns.slice(8 - this.bits.length, this.showNum ? 10 : 8);
-      // if (this.bits.length === 8) return this.allColumns;
-      // else return this.allColumns.slice(4, 10);
+      let x = this.showNum ? this.allColumns : this.allColumns.slice(0, 1);
+      if (this.precalculated !== undefined) {
+        x[4] = {
+          name: "precalc",
+          label: this.precalculated.label,
+          field: this.precalculated.label
+        };
+      }
+      if (this.rowname !== undefined) return x;
+      else return x.slice(1);
     },
     bitsTableData: function() {
       var x = {};
-      for (let i = 0; i < this.bits.length; i++) {
-        x["B" + i] = this.bits[this.bits.length - 1 - i];
+      switch (this.bits.length) {
+        case 4:
+          x.bits = this.bits.join("");
+          break;
+        case 6:
+          x.bits = this.bits.join(" ");
+          break;
+        case 8:
+          x.bits =
+            this.bits.slice(0, 4).join("") +
+            " " +
+            this.bits.slice(4, 8).join("");
+          break;
+        default:
+          x.bits = this.bits.join("");
       }
       x.Dec = parseInt(this.bits.join(""), 2)
         .toString(10)
@@ -49,6 +60,12 @@ export default {
       x.Hex = parseInt(this.bits.join(""), 2)
         .toString(16)
         .padStart(2, "0");
+      if (this.precalculated !== undefined) {
+        x[this.precalculated.label] = this.precalculated.value;
+      }
+      if (this.rowname !== undefined) {
+        x.rowname = this.rowname;
+      }
       return [x];
     }
   }

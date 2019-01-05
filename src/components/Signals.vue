@@ -2,7 +2,7 @@
   <div>
     <q-table :data="sigTableData" :columns="sigTableColumns" dense hide-bottom>
       <q-td slot="body-cell" slot-scope="props" :props="props">
-        <q-chip small :color="isActive(props.col.name) ? 'primary' : 'secondary'">{{props.value}}</q-chip>
+        <q-chip dense :color="isActive(props.col.name) ? 'negative' : 'light'">{{props.value}}</q-chip>
       </q-td>
     </q-table>
   </div>
