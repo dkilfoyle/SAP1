@@ -3,8 +3,18 @@
     <div>
       <div class="row gutter-md">
         <div class="col">
-          <program-counter :cBus="pcSignals" @pushToBus="pushToBus" class="q-mb-md"></program-counter>
-          <r-a-m-block :cBus="rbSignals" :busBits="busBits" @pushToBus="pushToBus"></r-a-m-block>
+          <program-counter
+            :cBus="pcSignals"
+            @pushToBus="pushToBus"
+            :maxCounter="maxCounter"
+            class="q-mb-md"
+          ></program-counter>
+          <r-a-m-block
+            :cBus="rbSignals"
+            :busBits="busBits"
+            @pushToBus="pushToBus"
+            @setMaxCounter="setMaxCounter"
+          ></r-a-m-block>
         </div>
         <div class="col">
           <control-block
@@ -35,6 +45,7 @@ import Bus from "../components/Bus";
 import ControlBlock from "../components/ControlBlock";
 import ALUBlock from "../components/ALUBlock";
 import OutputRegister from "../components/OutputRegister";
+import BitArray from "../components/BitArray";
 
 export default {
   name: "PageIndex",
@@ -48,7 +59,8 @@ export default {
   },
   data() {
     return {
-      busBits: new Array(8).fill(0),
+      busBits: new BitArray(8),
+      maxCounter: 0,
       CLK: 1,
       CLR: 0,
       CLKi: 0,
@@ -120,7 +132,7 @@ export default {
 
   methods: {
     reset: function() {
-      this.busBits = new Array(8).fill(0);
+      this.busBits = new BitArray(8);
       this.CLK = 0;
       this.CLR = 0;
       this.CLKi = 1;
@@ -156,13 +168,12 @@ export default {
       this.Lb = payload.Lb;
       this.Lo = payload.Lo;
     },
-    pushToBus: function(payloadBits) {
-      console.log("pushToBus: ", payloadBits);
-      this.busBits.splice(
-        this.busBits.length - payloadBits.length,
-        payloadBits.length,
-        ...payloadBits
-      );
+    pushToBus: function(payload) {
+      // console.log("pushToBus: ", payload);
+      this.busBits.set(payload);
+    },
+    setMaxCounter: function(payload) {
+      this.maxCounter = payload;
     }
   }
 };

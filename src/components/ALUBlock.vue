@@ -29,15 +29,16 @@
 import Accumulator from "./Accumulator";
 import ALU from "./ALU";
 import BRegister from "./BRegister";
+import BitArray from "./BitArray";
 export default {
   name: "ALUBlock",
   components: { Accumulator, ALU, BRegister },
   props: ["cBus", "busBits"],
   data() {
     return {
-      brBits: new Array(8).fill(0),
-      accBits: new Array(8).fill(0),
-      aluBits: new Array(8).fill(0)
+      brBits: new BitArray(8),
+      accBits: new BitArray(8),
+      aluBits: new BitArray(8)
     };
   },
   computed: {
@@ -60,14 +61,13 @@ export default {
   },
   methods: {
     loadBusToACC() {
-      this.accBits.splice(0, 8, ...this.busBits);
+      this.accBits.set(this.busBits); // splice(0, 8, ...this.busBits);
     },
     loadBusToB() {
-      this.brBits.splice(0, 8, ...this.busBits);
+      this.brBits.set(this.busBits);
     },
     loadALUandPushToBus(payload) {
-      console.log("ALU pushToBus", payload);
-      this.aluBits.splice(0, 8, ...payload);
+      this.aluBits.set(payload); // splice(0, 8, ...payload);
       this.$emit("pushToBus", this.aluBits);
     },
     pushACCToBus() {

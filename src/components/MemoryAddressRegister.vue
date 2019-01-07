@@ -3,7 +3,7 @@
     <q-card-title>Memory Address Register</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="marBits"></bits>
+      <bits :bitArray="marBits"></bits>
       <signals class="q-mt-md" :signals="cBus"></signals>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
         <q-alert
@@ -35,7 +35,7 @@ export default {
       if (this.cBus.Lm === 0 && this.cBus.CLK === 1) {
         return {
           icon: "arrow_back",
-          msg: "Load from bus: " + "XXXX " + this.busBits.slice(4, 8).join("")
+          msg: "Load from bus: " + "XXXX " + this.busBits.getLWord()
         };
       }
       return "";

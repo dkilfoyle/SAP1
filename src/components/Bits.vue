@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import BitArray from "./BitArray";
 export default {
   name: "Bits",
   data() {
@@ -12,13 +13,13 @@ export default {
       allColumns: [
         { name: "rowname", label: "", field: "rowname" },
         { name: "bits", label: "Bits", field: "bits" },
-        { name: "Dec", label: "Dec", field: "Dec" },
-        { name: "Hex", label: "Hex", field: "Hex" }
+        { name: "dec", label: "Dec", field: "dec" },
+        { name: "hex", label: "Hex", field: "hex" }
       ]
     };
   },
   props: {
-    bits: Array,
+    bitArray: BitArray,
     showNum: { type: Boolean, default: true },
     precalculated: { type: Object, default: undefined },
     rowname: { type: String, default: undefined }
@@ -38,28 +39,9 @@ export default {
     },
     bitsTableData: function() {
       var x = {};
-      switch (this.bits.length) {
-        case 4:
-          x.bits = this.bits.join("");
-          break;
-        case 6:
-          x.bits = this.bits.join(" ");
-          break;
-        case 8:
-          x.bits =
-            this.bits.slice(0, 4).join("") +
-            " " +
-            this.bits.slice(4, 8).join("");
-          break;
-        default:
-          x.bits = this.bits.join("");
-      }
-      x.Dec = parseInt(this.bits.join(""), 2)
-        .toString(10)
-        .padStart(2, "0");
-      x.Hex = parseInt(this.bits.join(""), 2)
-        .toString(16)
-        .padStart(2, "0");
+      x.bits = this.bitArray.toString(2);
+      x.dec = this.bitArray.toString(10);
+      x.hex = this.bitArray.toString(16);
       if (this.precalculated !== undefined) {
         x[this.precalculated.label] = this.precalculated.value;
       }

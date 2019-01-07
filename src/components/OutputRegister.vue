@@ -3,7 +3,7 @@
     <q-card-title>Output</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="bits"></bits>
+      <bits :bitArray="bits"></bits>
       <signals class="q-mt-md" :signals="cBus"></signals>
     </q-card-main>
   </q-card>
@@ -12,13 +12,15 @@
 <script>
 import Signals from "./Signals";
 import Bits from "./Bits";
+import BitArray from "./BitArray";
+
 export default {
   name: "OutputRegister",
   props: ["cBus", "busBits"],
   components: { Signals, Bits },
   data() {
     return {
-      bits: new Array(8).fill(0)
+      bits: new BitArray(8)
     };
   },
   computed: {
@@ -37,8 +39,7 @@ export default {
   },
   watch: {
     "cBus.CLK": function(newCLK, oldCLK) {
-      if (newCLK === 1 && this.cBus.Lo === 0)
-        this.bits.splice(0, 8, ...this.busBits);
+      if (newCLK === 1 && this.cBus.Lo === 0) this.bits.set(this.busBits);
     }
   }
 };

@@ -3,7 +3,8 @@
     <q-card-title>Program Counter</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="bits"></bits>
+      <bits :bitArray="bits"></bits>
+      <q-progress :percentage="percentage"></q-progress>
       <signals class="q-mt-md" :signals="cBus"></signals>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
         <q-alert
@@ -20,29 +21,33 @@
 <script>
 import Signals from "./Signals";
 import Bits from "./Bits";
+import BitArray from "./BitArray";
 export default {
   name: "PC",
-  props: ["cBus"],
+  props: ["cBus", "maxCounter"],
   components: { Signals, Bits },
   data() {
     return {
-      bits: new Array(4).fill(0)
+      bits: new BitArray(4)
     };
   },
   computed: {
     isActive: function() {
       return this.cBus.Cp === 1 || this.cBus.Ep === 1;
     },
+    percentage: function() {
+      return (this.bits.asInteger() / this.maxCounter) * 100;
+    },
     message: function() {
       if (this.cBus.Ep === 1)
         return {
           icon: "arrow_forward",
-          msg: "Push to bus: " + this.bits.join("")
+          msg: "Push to bus: " + this.bits.toString(2)
         };
       if (this.cBus.Cp === 1 && this.cBus.CLKi === 0)
         return {
           icon: "arrow_downward",
-          msg: "Incremented: " + this.bits.join("")
+          msg: "Incremented: " + this.bits.toString(2)
         };
       return "";
     }
@@ -50,7 +55,6 @@ export default {
   watch: {
     "cBus.Ep": function(newEp, oldEp) {
       if (this.cBus.Ep === 1) {
-        console.log("PC pushToBus", this.bits);
         this.$emit("pushToBus", this.bits);
       }
     },
@@ -60,12 +64,7 @@ export default {
   },
   methods: {
     increment: function() {
-      let i = parseInt(this.bits.join(""), 2);
-      let x = (i + 1)
-        .toString(2)
-        .padStart(4, "0")
-        .split("");
-      this.bits = x.map(x => parseInt(x));
+      this.bits.set(this.bits.asInteger() + 1);
     }
   }
 };

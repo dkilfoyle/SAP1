@@ -62,7 +62,8 @@ module.exports = function(ctx) {
         "QTd",
         "QCheckbox",
         "QChip",
-        "QAlert"
+        "QAlert",
+        "QProgress"
       ],
       directives: ["Ripple"],
       // Quasar plugins

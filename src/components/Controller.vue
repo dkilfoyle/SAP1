@@ -4,6 +4,7 @@
     <q-card-separator/>
     <q-card-main>
       <q-table :data="ringTableData" :columns="ringTableColumns" dense hide-bottom></q-table>
+      <q-progress :percentage="tStatePercentage"></q-progress>
       <q-table
         :data="muinsTableData"
         :columns="muinsTableColumns"
@@ -23,17 +24,18 @@
         color="primary"
         icon="access_time"
       ></q-btn>
-      <q-btn label="Play" @click="play" :disable="halted" color="secondary" icon="play_arrow"></q-btn>
-      <q-btn label="Pause" @click="play" :disable="halted" color="secondary" icon="pause"></q-btn>
-      <q-btn label="CLR" icon="replay"></q-btn>
+      <q-btn @click="play" :disable="halted" color="secondary" icon="play_arrow"></q-btn>
+      <q-btn @click="pause" :disable="halted" color="secondary" icon="pause"></q-btn>
+      <q-btn icon="replay"></q-btn>
     </q-card-actions>
   </q-card>
 </template>
 
 <script>
-import { convertWordsToBits, getInstruction } from "./bitFunctions";
+import { convertWordsToBits } from "./bitFunctions";
 import Signals from "./Signals";
 import Bits from "./Bits";
+import BitArray from "./BitArray";
 export default {
   name: "Controller",
   props: ["cBus", "conSignals", "irBits"],
@@ -41,15 +43,15 @@ export default {
   data() {
     return {
       timer: undefined,
-      ringBits: [0, 0, 0, 0, 0, 0],
+      ringBits: new BitArray(6),
       TStateStr: [
+        "Undef",
         "Address",
         "Increment",
         "Memory",
         "Exec1",
         "Exec2",
-        "Exec3",
-        "Undef"
+        "Exec3"
       ],
       microInstructionsROM: {
         AIM: ["5E3", "BE3", "263"],
@@ -76,18 +78,21 @@ export default {
   },
   computed: {
     TState: function() {
-      let msbi = this.ringBits.indexOf(1);
-      return 6 - msbi;
+      let msbi = this.ringBits.getMSB();
+      return msbi + 1;
+    },
+    tStatePercentage: function() {
+      return (this.TState / 6) * 100;
     },
     TStateDesc: function() {
-      return this.TStateStr[this.TState - 1];
+      return this.TStateStr[this.TState];
     },
     halted: function() {
-      return getInstruction(this.irBits) === "HLT";
+      return this.getInstruction(this.irBits.getHWord().toString(2)) === "HLT";
     },
     instruction: function() {
       if (this.TState < 4) return "AIM";
-      else return getInstruction(this.irBits);
+      else return this.getInstruction(this.irBits.getHWord().toString(2));
     },
     microInstruction: function() {
       if (this.TState < 4)
@@ -112,7 +117,7 @@ export default {
       return [
         {
           tstate: "TState",
-          bits: this.ringBits.join(""),
+          bits: this.ringBits.toString(2),
           t: this.TState,
           descr: this.TStateDesc
         }
@@ -143,7 +148,6 @@ export default {
       }
     },
     microInstruction: function(newI, oldI) {
-      console.log("Controller Watch microInstruction", newI);
       let cBusBits = convertWordsToBits(this.microInstruction)
         .split("")
         .map(x => parseInt(x));
@@ -165,6 +169,14 @@ export default {
     }
   },
   methods: {
+    getInstruction(insBits) {
+      if (insBits === "0000") return "LDA"; // 0000
+      if (insBits === "0001") return "ADD"; // 0001
+      if (insBits === "0010") return "SUB"; // 0010
+      if (insBits === "1110") return "OUT"; // 1110
+      if (insBits === "1111") return "HLT"; // 1111
+      throw new Error("unrecognised instruction");
+    },
     halfCycle() {
       if (this.instruction !== "HLT") this.$emit("halfCycle");
     },
@@ -179,16 +191,16 @@ export default {
       clearInterval(this.timer);
     },
     ringRotate: function() {
-      let msbi = this.ringBits.indexOf(1);
+      let msbi = this.ringBits.getMSB();
       if (msbi === -1) {
         // first rotation
-        this.ringBits.splice(5, 1, 1);
+        this.ringBits.bits.splice(0, 1, 1);
       } else {
-        this.ringBits.splice(msbi, 1, 0);
-        if (msbi === 0) {
-          this.ringBits.splice(5, 1, 1);
+        this.ringBits.bits.splice(msbi, 1, 0);
+        if (msbi === 5) {
+          this.ringBits.bits.splice(0, 1, 1);
         } else {
-          this.ringBits.splice(msbi - 1, 1, 1);
+          this.ringBits.bits.splice(msbi + 1, 1, 1);
         }
       }
     }

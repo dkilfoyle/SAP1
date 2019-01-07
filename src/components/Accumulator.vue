@@ -3,7 +3,7 @@
     <q-card-title>Accumulator</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="accBits"></bits>
+      <bits :bitArray="accBits"></bits>
       <signals class="q-mt-md" :signals="cBus"></signals>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
         <q-alert
@@ -35,13 +35,13 @@ export default {
       if (this.cBus.La === 0 && this.cBus.CLK === 1) {
         return {
           icon: "arrow_forward",
-          msg: "Load from bus: " + this.busBits.join("")
+          msg: "Load from bus: " + this.busBits.toString()
         };
       }
       if (this.cBus.Ea === 1) {
         return {
           icon: "arrow_back",
-          msg: "Push to bus: " + this.accBits.join("")
+          msg: "Push to bus: " + this.accBits.toString()
         };
       }
       return "";

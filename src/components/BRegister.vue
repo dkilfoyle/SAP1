@@ -3,7 +3,7 @@
     <q-card-title>B Register</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="brBits"></bits>
+      <bits :bitArray="brBits"></bits>
       <signals class="q-mt-md" :signals="cBus"></signals>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
         <q-alert
@@ -35,7 +35,7 @@ export default {
       if (this.cBus.Lb === 0 && this.cBus.CLK === 1) {
         return {
           icon: "arrow_forward",
-          msg: "Load from bus: " + this.busBits.join("")
+          msg: "Load from bus: " + this.busBits.toString(2)
         };
       }
       return "";
@@ -43,7 +43,9 @@ export default {
   },
   watch: {
     "cBus.CLK": function(newCLK, oldCLK) {
-      if (newCLK === 1 && this.cBus.Lb === 0) this.$emit("loadBusToB");
+      if (newCLK === 1 && this.cBus.Lb === 0) {
+        this.$emit("loadBusToB");
+      }
     }
   }
 };

@@ -21,6 +21,7 @@
 <script>
 import InstructionRegister from "./InstructionRegister";
 import Controller from "./Controller";
+import BitArray from "./BitArray";
 
 export default {
   name: "ControlBlock",
@@ -28,7 +29,7 @@ export default {
   props: ["cBus", "busBits", "conSignals"],
   data() {
     return {
-      irBits: new Array(8).fill(0)
+      irBits: new BitArray(8)
     };
   },
   computed: {
@@ -49,7 +50,8 @@ export default {
       this.$emit("halfCycle");
     },
     loadIrFromBus: function() {
-      this.irBits.splice(0, 8, ...this.busBits);
+      // this.irBits.splice(0, 8, ...this.busBits);
+      this.irBits.set(this.busBits);
     }
   }
 };

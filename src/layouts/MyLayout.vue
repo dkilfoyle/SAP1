@@ -6,8 +6,8 @@
           <q-icon name="menu"/>
         </q-btn>
 
-        <q-toolbar-title>Quasar App
-          <div slot="subtitle">Running on Quasar v{{ $q.version }}</div>
+        <q-toolbar-title>SAP - 1
+          <div slot="subtitle">Simple As Possible Computer Mark 1</div>
         </q-toolbar-title>
       </q-toolbar>
     </q-layout-header>

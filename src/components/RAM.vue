@@ -3,7 +3,14 @@
     <q-card-title>RAM</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <q-table :data="ramTableData" :columns="ramTableColumns" dense></q-table>
+      <q-table
+        :data="ramTableData"
+        :columns="ramTableColumns"
+        dense
+        :pagination.sync="pagination"
+        :selected.sync="selected"
+        row-key="address"
+      ></q-table>
       <signals class="q-mt-md" :signals="cBus"></signals>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
         <q-alert
@@ -24,17 +31,28 @@ export default {
   components: { Signals },
   props: ["cBus", "ramBits", "marBits"],
   data() {
-    return {};
+    return {
+      pagination: {
+        sortBy: null, // String, column "name" property value
+        descending: false,
+        page: 1,
+        rowsPerPage: 5 // current rows per page being displayed
+      },
+      selected: [{ address: "00_0000_0" }]
+    };
   },
   watch: {
     "cBus.CE": function(newCE, oldCE) {
       if (newCE === 0) {
-        console.log("RAM: CE: loadRamToBus");
-        this.$emit(
-          "loadRamToBus",
-          this.ramBits[parseInt(this.marBits.join(""), 2)]
-        );
+        this.$emit("loadRamToBus", this.ramBits[this.marBits.asInteger()]);
       }
+    },
+    marBits: function(newMar, oldMar) {
+      this.pagination.page =
+        Math.floor(this.marBits.asInteger() / this.pagination.rowsPerPage) + 1;
+      this.selected = [
+        { address: this.getAddressLabel(this.marBits.asInteger()) }
+      ];
     }
   },
   computed: {
@@ -46,8 +64,7 @@ export default {
         return {
           icon: "arrow_forward",
           msg:
-            "Push to bus: " +
-            this.ramBits[parseInt(this.marBits.join(""), 2)].join("")
+            "Push to bus: " + this.ramBits[this.marBits.asInteger()].toString(2)
         };
       }
       return "";
@@ -56,36 +73,23 @@ export default {
       return [
         { name: "address", label: "Address", field: "address" },
         { name: "bits", label: "Bits", field: "bits" },
-        { name: "Dec", label: "Dec", field: "Dec" },
-        { name: "Hex", label: "Hex", field: "Hex" }
+        { name: "dec", label: "Dec", field: "dec" },
+        { name: "hex", label: "Hex", field: "hex" }
       ];
     },
     ramTableData: function() {
       var x = [];
       var bData = false;
       for (let i = 0; i < 16; i++) {
-        let rowName =
-          i.toString().padStart(2, "0") +
-          "_" +
-          i.toString(2).padStart(4, "0") +
-          "_" +
-          i.toString(16);
         x[i] = {
-          address: rowName,
-          bits:
-            this.ramBits[i].slice(0, 4).join("") +
-            " " +
-            this.ramBits[i].slice(4, 8).join(""),
-          Dec: bData
-            ? parseInt(this.ramBits[i].join(""), 2)
-                .toString()
-                .padStart(2, "0")
-            : this.getInstruction(this.ramBits[i].slice(0, 4).join("")),
-          Hex: parseInt(this.ramBits[i].join(""), 2)
-            .toString(16)
-            .padStart(2, "0")
+          address: this.getAddressLabel(i),
+          bits: this.ramBits[i].toString(2),
+          dec: bData
+            ? this.ramBits[i].toString(10)
+            : this.getInstruction(this.ramBits[i].getWord(2).toString(2)),
+          hex: this.ramBits[i].toString(16)
         };
-        if (this.ramBits[i].slice(0, 4).join("") === "1111") bData = true;
+        if (this.ramBits[i].getWord(2).toString(2) === "1111") bData = true;
       }
       return x;
     }
@@ -98,10 +102,22 @@ export default {
       if (insBitsStr === "1110") return "OUT"; // 1110
       if (insBitsStr === "1111") return "HLT"; // 1111
       return "XXX";
+    },
+    getAddressLabel: function(i) {
+      return (
+        i.toString().padStart(2, "0") +
+        "_" +
+        i.toString(2).padStart(4, "0") +
+        "_" +
+        i.toString(16)
+      );
     }
   }
 };
 </script>
 
 <style>
+q-table tbody tr.selected {
+  background: red;
+}
 </style>

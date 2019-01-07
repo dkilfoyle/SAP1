@@ -3,7 +3,7 @@
     <q-card-title>ALU</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="aluBits"></bits>
+      <bits :bitArray="aluBits"></bits>
       <signals class="q-mt-md" :signals="cBus"></signals>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
         <q-alert
@@ -20,6 +20,7 @@
 <script>
 import Signals from "./Signals";
 import Bits from "./Bits";
+import BitArray from "./BitArray";
 export default {
   name: "ALU",
   props: ["cBus", "aluBits", "accBits", "brBits"],
@@ -35,13 +36,13 @@ export default {
       if (this.cBus.Su === 1) {
         return {
           icon: "arrow_forward",
-          msg: "Set ALU to ACC-B and push to ACC: " + this.aluBits.join("")
+          msg: "Set ALU to ACC-B and push to ACC: " + this.aluBits.toString()
         };
       }
       if (this.cBus.Eu === 1) {
         return {
           icon: "arrow_back",
-          msg: "Set ALU to ACC+B and push to ACC: " + this.aluBits.join("")
+          msg: "Set ALU to ACC+B and push to ACC: " + this.aluBits.toString()
         };
       }
       return "";
@@ -50,30 +51,17 @@ export default {
   watch: {
     "cBus.Eu": function(newEu, oldEu) {
       if (newEu === 1) {
-        this.$emit(
-          "loadALUandPushToBus",
-          (
-            parseInt(this.accBits.join(""), 2) +
-            parseInt(this.brBits.join(""), 2)
-          )
-            .toString(2)
-            .padStart(8, "0")
-            .split("")
-        );
+        let x = new BitArray(8);
+        x.setNumber(this.accBits.asInteger() + this.brBits.asInteger());
+        this.$emit("loadALUandPushToBus", x);
       }
     },
-    "cBus.Su": function(newEu, oldEu) {
-      if (newEu === 1)
-        this.$emit(
-          "loadALUandPushToBus",
-          (
-            parseInt(this.accBits.join(""), 2) -
-            parseInt(this.brBits.join(""), 2)
-          )
-            .toString(2)
-            .padStart(8, "0")
-            .split("")
-        );
+    "cBus.Su": function(newSu, oldSu) {
+      if (newSu === 1) {
+        let x = new BitArray(8);
+        x.setNumber(this.accBits.asInteger() - this.brBits.asInteger());
+        this.$emit("loadALUandPushToBus", x);
+      }
     }
   }
 };

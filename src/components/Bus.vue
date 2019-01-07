@@ -3,7 +3,7 @@
     <q-card-title>Bus</q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bits="busBits"></bits>
+      <bits :bitArray="busBits"></bits>
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
         <q-alert
           type="info"
@@ -26,15 +26,11 @@ export default {
     return { message: "" };
   },
   watch: {
-    busBits: function(newBus, oldBus) {
+    "busBits.bits": function(newBus, oldBus) {
       if (this.cBus.CLK === 0) {
         this.message = {
           icon: "arrow_downward",
-          msg:
-            "Bus loaded: " +
-            newBus.slice(0, 4).join("") +
-            " " +
-            newBus.slice(4, 8).join("")
+          msg: "Bus loaded: " + this.busBits.toString(2)
         };
       } else {
         this.message = "";
