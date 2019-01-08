@@ -1,6 +1,8 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
-    <q-card-title>Instruction Register</q-card-title>
+    <q-card-title>
+      <block-title title="Instruction Register" :message="message"></block-title>
+    </q-card-title>
     <q-card-separator/>
     <q-card-main>
       <bits
@@ -10,25 +12,14 @@
       ></bits>
       <bits rowname="Addr" :bitArray="addressBits" class="q-mt-md"></bits>
       <signals :signals="cBus" class="q-mt-md"></signals>
-      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <q-alert
-          type="info"
-          :icon="message.icon"
-          v-if="message !== ''"
-          class="q-mt-md"
-        >{{message.msg}}</q-alert>
-      </transition>
     </q-card-main>
   </q-card>
 </template>
 
 <script>
-import Signals from "./Signals";
-import Bits from "./Bits";
 export default {
   name: "IntructionRegister",
   props: ["cBus", "busBits", "irBits"],
-  components: { Signals, Bits },
   data() {
     return {};
   },
@@ -49,13 +40,15 @@ export default {
       if (this.cBus.Li === 0 && this.cBus.CLK === 1) {
         return {
           icon: "arrow_downward",
-          msg: "Load from bus: " + this.busBits.toString(2)
+          pointing: "left",
+          msg: this.busBits.toString(2)
         };
       }
       if (this.cBus.Ei === 0) {
         return {
           icon: "arrow_downward",
-          msg: "Push to bus: " + this.busBits.toString(2)
+          pointing: "right",
+          msg: this.busBits.toString(2)
         };
       }
       return "";

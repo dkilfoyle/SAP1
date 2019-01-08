@@ -88,4 +88,18 @@ export default class BitArray {
     if (val instanceof BitArray) return this.setArray(val.bits);
     return this;
   }
+  static add(a, b) {
+    let x = a ^ b; // xor to get sum without carry
+
+    while (a & b) {
+      // while there is still a carry
+      b = (a & b) << 1;
+      a = x;
+      x = a ^ b;
+    }
+    return x;
+  }
+  static subtract(a, b) {
+    return BitArray.add(a, BitArray.add(~b + 1));
+  }
 }

@@ -7,6 +7,7 @@
       :busBits="busBits"
       @setCBus="setCBus"
       @halfCycle="halfCycle"
+      ref="CON"
     ></controller>
     <instruction-register
       :cBus="irSignals"
@@ -14,6 +15,7 @@
       :busBits="busBits"
       @loadIrFromBus="loadIrFromBus"
       class="q-mt-md"
+      ref="IR"
     ></instruction-register>
   </div>
 </template>
@@ -48,6 +50,10 @@ export default {
     },
     halfCycle: function() {
       this.$emit("halfCycle");
+    },
+    reset: function() {
+      this.irBits.set(0);
+      this.$refs.CON.reset();
     },
     loadIrFromBus: function() {
       // this.irBits.splice(0, 8, ...this.busBits);

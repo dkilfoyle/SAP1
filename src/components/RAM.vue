@@ -1,6 +1,8 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
-    <q-card-title>RAM</q-card-title>
+    <q-card-title>
+      <block-title title="RAM" :message="message"></block-title>
+    </q-card-title>
     <q-card-separator/>
     <q-card-main>
       <q-table
@@ -12,23 +14,13 @@
         row-key="address"
       ></q-table>
       <signals class="q-mt-md" :signals="cBus"></signals>
-      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <q-alert
-          type="info"
-          :icon="message.icon"
-          v-if="message !== ''"
-          class="q-mt-md"
-        >{{message.msg}}</q-alert>
-      </transition>
     </q-card-main>
   </q-card>
 </template>
 
 <script>
-import Signals from "./Signals";
 export default {
   name: "RAM",
-  components: { Signals },
   props: ["cBus", "ramBits", "marBits"],
   data() {
     return {
@@ -63,8 +55,8 @@ export default {
       if (this.cBus.CE === 0) {
         return {
           icon: "arrow_forward",
-          msg:
-            "Push to bus: " + this.ramBits[this.marBits.asInteger()].toString(2)
+          pointing: "right",
+          msg: this.ramBits[this.marBits.asInteger()].toString(2)
         };
       }
       return "";

@@ -1,31 +1,23 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
-    <q-card-title>Program Counter</q-card-title>
+    <q-card-title>
+      <block-title title="Program Counter" :message="message"></block-title>
+    </q-card-title>
     <q-card-separator/>
     <q-card-main>
       <bits :bitArray="bits"></bits>
       <q-progress :percentage="percentage"></q-progress>
       <signals class="q-mt-md" :signals="cBus"></signals>
-      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <q-alert
-          type="info"
-          :icon="message.icon"
-          v-if="message !== ''"
-          class="q-mt-md"
-        >{{message.msg}}</q-alert>
-      </transition>
     </q-card-main>
   </q-card>
 </template>
 
 <script>
-import Signals from "./Signals";
-import Bits from "./Bits";
 import BitArray from "./BitArray";
 export default {
   name: "PC",
   props: ["cBus", "maxCounter"],
-  components: { Signals, Bits },
+  // components: { Signals, Bits, BlockTitle },
   data() {
     return {
       bits: new BitArray(4)
@@ -42,11 +34,13 @@ export default {
       if (this.cBus.Ep === 1)
         return {
           icon: "arrow_forward",
-          msg: "Push to bus: " + this.bits.toString(2)
+          pointing: "right",
+          msg: this.bits.toString(2)
         };
       if (this.cBus.Cp === 1 && this.cBus.CLKi === 0)
         return {
           icon: "arrow_downward",
+          pointing: "left",
           msg: "Incremented: " + this.bits.toString(2)
         };
       return "";
@@ -65,6 +59,9 @@ export default {
   methods: {
     increment: function() {
       this.bits.set(this.bits.asInteger() + 1);
+    },
+    reset: function() {
+      this.bits.set(0);
     }
   }
 };

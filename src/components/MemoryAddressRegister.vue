@@ -1,29 +1,20 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
-    <q-card-title>Memory Address Register</q-card-title>
+    <q-card-title>
+      <block-title title="MAR" :message="message"></block-title>
+    </q-card-title>
     <q-card-separator/>
     <q-card-main>
       <bits :bitArray="marBits"></bits>
       <signals class="q-mt-md" :signals="cBus"></signals>
-      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <q-alert
-          type="info"
-          :icon="message.icon"
-          v-if="message !== ''"
-          class="q-mt-md"
-        >{{message.msg}}</q-alert>
-      </transition>
     </q-card-main>
   </q-card>
 </template>
 
 <script>
-import Signals from "./Signals";
-import Bits from "./Bits";
 export default {
   name: "MAR",
   props: ["cBus", "busBits", "marBits"],
-  components: { Signals, Bits },
   data() {
     return {};
   },
@@ -35,7 +26,8 @@ export default {
       if (this.cBus.Lm === 0 && this.cBus.CLK === 1) {
         return {
           icon: "arrow_back",
-          msg: "Load from bus: " + "XXXX " + this.busBits.getLWord()
+          pointing: "left",
+          msg: "XXXX " + this.busBits.getLWord()
         };
       }
       return "";

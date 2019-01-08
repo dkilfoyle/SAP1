@@ -32,16 +32,7 @@ export default {
     };
   },
   mounted: function() {
-    this.ramBits[0].set("00001001");
-    this.ramBits[1].set("00011010");
-    this.ramBits[2].set("00011011");
-    this.ramBits[3].set("00101100");
-    this.ramBits[4].set("11100000");
-    this.ramBits[5].set("11110000");
-    this.ramBits[9].set("00010000");
-    this.ramBits[10].set("00010100");
-    this.ramBits[11].set("00011000");
-    this.ramBits[12].set("00100000");
+    this.programRam();
   },
   computed: {
     ramSignals: function() {
@@ -62,6 +53,10 @@ export default {
     }
   },
   methods: {
+    reset: function() {
+      this.ramBits.map(x => x.set(0));
+      this.marBits.set(0);
+    },
     loadBusToMar: function() {
       // console.log("RAMBlock: loadBusToMar: ", this.busBits);
       // this.marBits.splice(0, 4, ...this.busBits.slice(4, 8));
@@ -70,6 +65,18 @@ export default {
     loadRamToBus: function(payload) {
       // console.log("RAMBlock: loadRamToBus: ", payload);
       this.$emit("pushToBus", payload);
+    },
+    programRam: function() {
+      this.ramBits[0].set("00001001");
+      this.ramBits[1].set("00011010");
+      this.ramBits[2].set("00011011");
+      this.ramBits[3].set("00101100");
+      this.ramBits[4].set("11100000");
+      this.ramBits[5].set("11110000");
+      this.ramBits[9].set("00010000");
+      this.ramBits[10].set("00010100");
+      this.ramBits[11].set("00011000");
+      this.ramBits[12].set("00100000");
     }
   }
 };

@@ -8,12 +8,14 @@
             @pushToBus="pushToBus"
             :maxCounter="maxCounter"
             class="q-mb-md"
+            ref="PC"
           ></program-counter>
           <r-a-m-block
             :cBus="rbSignals"
             :busBits="busBits"
             @pushToBus="pushToBus"
             @setMaxCounter="setMaxCounter"
+            ref="RB"
           ></r-a-m-block>
         </div>
         <div class="col">
@@ -23,12 +25,14 @@
             :busBits="busBits"
             @halfCycle="halfCycle"
             @setCBus="setCBus"
+            @reset="reset"
+            ref="CB"
           ></control-block>
           <bus :busBits="busBits" :cBus="busSignals" class="q-mt-md"></bus>
         </div>
         <div class="col">
-          <a-l-u-block :cBus="abSignals" :busBits="busBits" @pushToBus="pushToBus"/>
-          <output-register :cBus="outSignals" :busBits="busBits" class="q-mt-md"></output-register>
+          <a-l-u-block :cBus="abSignals" :busBits="busBits" @pushToBus="pushToBus" ref="ALU"/>
+          <output-register :cBus="outSignals" :busBits="busBits" class="q-mt-md" ref="OUTR"></output-register>
         </div>
       </div>
     </div>
@@ -149,6 +153,11 @@ export default {
       this.Eu = 0;
       this.Lb = 1;
       this.Lo = 1;
+      this.$refs.PC.reset();
+      this.$refs.RB.reset();
+      this.$refs.CB.reset();
+      this.$refs.OUTR.reset();
+      this.$refs.ALU.reset();
     },
     halfCycle: function() {
       this.CLK = this.CLK === 1 ? 0 : 1;

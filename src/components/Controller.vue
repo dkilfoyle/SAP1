@@ -1,6 +1,8 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
-    <q-card-title>Controller</q-card-title>
+    <q-card-title>
+      <block-title title="Controller" :message="message"></block-title>
+    </q-card-title>
     <q-card-separator/>
     <q-card-main>
       <q-table :data="ringTableData" :columns="ringTableColumns" dense hide-bottom></q-table>
@@ -26,22 +28,20 @@
       ></q-btn>
       <q-btn @click="play" :disable="halted" color="secondary" icon="play_arrow"></q-btn>
       <q-btn @click="pause" :disable="halted" color="secondary" icon="pause"></q-btn>
-      <q-btn icon="replay"></q-btn>
+      <q-btn @click="$parent.emit('reset')" icon="replay"></q-btn>
     </q-card-actions>
   </q-card>
 </template>
 
 <script>
 import { convertWordsToBits } from "./bitFunctions";
-import Signals from "./Signals";
-import Bits from "./Bits";
 import BitArray from "./BitArray";
 export default {
   name: "Controller",
   props: ["cBus", "conSignals", "irBits"],
-  components: { Bits, Signals },
   data() {
     return {
+      message: "",
       timer: undefined,
       ringBits: new BitArray(6),
       TStateStr: [
@@ -189,6 +189,9 @@ export default {
     },
     pause() {
       clearInterval(this.timer);
+    },
+    reset() {
+      this.ringBits.set(0);
     },
     ringRotate: function() {
       let msbi = this.ringBits.getMSB();

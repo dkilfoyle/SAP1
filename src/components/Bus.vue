@@ -1,26 +1,18 @@
 <template>
   <q-card>
-    <q-card-title>Bus</q-card-title>
+    <q-card-title>
+      <block-title title="Bus" :message="message"></block-title>
+    </q-card-title>
     <q-card-separator/>
     <q-card-main>
       <bits :bitArray="busBits"></bits>
-      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <q-alert
-          type="info"
-          :icon="message.icon"
-          v-if="message !== ''"
-          class="q-mt-md"
-        >{{message.msg}}</q-alert>
-      </transition>
     </q-card-main>
   </q-card>
 </template>
 
 <script>
-import Bits from "./Bits";
 export default {
   name: "Bus",
-  components: { Bits },
   props: ["busBits", "cBus"],
   data() {
     return { message: "" };

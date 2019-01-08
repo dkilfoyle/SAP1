@@ -1,6 +1,8 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
-    <q-card-title>Output</q-card-title>
+    <q-card-title>
+      <block-title title="Outpu" :message="message"></block-title>
+    </q-card-title>
     <q-card-separator/>
     <q-card-main>
       <bits :bitArray="bits"></bits>
@@ -10,14 +12,11 @@
 </template>
 
 <script>
-import Signals from "./Signals";
-import Bits from "./Bits";
 import BitArray from "./BitArray";
 
 export default {
   name: "OutputRegister",
   props: ["cBus", "busBits"],
-  components: { Signals, Bits },
   data() {
     return {
       bits: new BitArray(8)
@@ -31,7 +30,8 @@ export default {
       if (this.cBus.Lo === 0 && this.cBus.CLK === 1) {
         return {
           icon: "arrow_forward",
-          msg: "Load from bus: " + this.busBits.join("")
+          pointing: "right",
+          msg: this.busBits.toString()
         };
       }
       return "";
