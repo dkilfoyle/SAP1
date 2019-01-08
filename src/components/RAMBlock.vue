@@ -39,7 +39,7 @@ export default {
       return { CE: this.cBus.CE };
     },
     marSignals: function() {
-      return { Lm: this.cBus.Lm, CLK: this.cBus.CLK };
+      return { CLK: this.cBus.CLK, Lm: this.cBus.Lm };
     },
     maxCounter: function() {
       return this.ramBits.findIndex(x => {

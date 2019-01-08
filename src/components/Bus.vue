@@ -1,10 +1,11 @@
 <template>
   <q-card>
     <q-card-title>
-      <block-title title="Bus" :message="message"></block-title>
+      <block-title title="Bus" :message="message" :value="busBits.asInteger()"></block-title>
     </q-card-title>
     <q-card-separator/>
     <q-card-main>
+      <!-- <signals :signals="conSignals" class="q-mt-md"></signals> -->
       <bits :bitArray="busBits"></bits>
     </q-card-main>
   </q-card>

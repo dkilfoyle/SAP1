@@ -1,7 +1,8 @@
 <template>
   <div class="row justify-between">
     <div class="col">
-      <span>{{title}}</span>
+      <span v-if="value !== undefined">{{title}} = {{value}}</span>
+      <span v-else>{{title}}</span>
     </div>
     <div class="col-auto">
       <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
@@ -19,7 +20,7 @@
 <script>
 export default {
   name: "BlockTitle",
-  props: ["message", "title"],
+  props: ["message", "title", "value"],
   data() {
     return {};
   }

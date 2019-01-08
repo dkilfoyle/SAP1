@@ -1,24 +1,31 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>
-      <block-title title="RAM" :message="message"></block-title>
+      <block-title title="RAM" :message="message" :value="addressedValue.asInteger()"></block-title>
     </q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <q-table
-        :data="ramTableData"
-        :columns="ramTableColumns"
-        dense
-        :pagination.sync="pagination"
-        :selected.sync="selected"
-        row-key="address"
-      ></q-table>
-      <signals class="q-mt-md" :signals="cBus"></signals>
+      <div class="row gutter-sm">
+        <div class="col-auto">
+          <signals :signals="cBus"></signals>
+        </div>
+        <div class="col">
+          <q-table
+            :data="ramTableData"
+            :columns="ramTableColumns"
+            dense
+            :pagination.sync="pagination"
+            :selected.sync="selected"
+            row-key="address"
+          ></q-table>
+        </div>
+      </div>
     </q-card-main>
   </q-card>
 </template>
 
 <script>
+// TODO: Implement RAM editing
 export default {
   name: "RAM",
   props: ["cBus", "ramBits", "marBits"],
@@ -28,7 +35,7 @@ export default {
         sortBy: null, // String, column "name" property value
         descending: false,
         page: 1,
-        rowsPerPage: 5 // current rows per page being displayed
+        rowsPerPage: 10 // current rows per page being displayed
       },
       selected: [{ address: "00_0000_0" }]
     };
@@ -36,7 +43,7 @@ export default {
   watch: {
     "cBus.CE": function(newCE, oldCE) {
       if (newCE === 0) {
-        this.$emit("loadRamToBus", this.ramBits[this.marBits.asInteger()]);
+        this.$emit("loadRamToBus", this.addressedValue);
       }
     },
     marBits: function(newMar, oldMar) {
@@ -48,6 +55,9 @@ export default {
     }
   },
   computed: {
+    addressedValue: function() {
+      return this.ramBits[this.marBits.asInteger()];
+    },
     isActive: function() {
       return this.cBus.CE === 0;
     },

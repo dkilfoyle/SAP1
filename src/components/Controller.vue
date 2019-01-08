@@ -1,21 +1,29 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>
-      <block-title title="Controller" :message="message"></block-title>
+      <block-title title="Controller" :message="message" :value="microInstruction"></block-title>
     </q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <q-table :data="ringTableData" :columns="ringTableColumns" dense hide-bottom></q-table>
-      <q-progress :percentage="tStatePercentage"></q-progress>
-      <q-table
-        :data="muinsTableData"
-        :columns="muinsTableColumns"
-        dense
-        hide-bottom
-        class="q-mt-md"
-      ></q-table>
+      <div class="row gutter-sm">
+        <div class="col-auto">
+          <signals :signals="conSignals"></signals>
+        </div>
+        <div class="col">
+          <q-table :data="ringTableData" :columns="ringTableColumns" dense hide-bottom></q-table>
+          <q-progress :percentage="tStatePercentage"></q-progress>
+          <q-table
+            :data="muinsTableData"
+            :columns="muinsTableColumns"
+            dense
+            hide-bottom
+            class="q-mt-md"
+          ></q-table>
+        </div>
+      </div>
+
       <signals :signals="cBus" class="q-mt-md"></signals>
-      <signals :signals="conSignals" class="q-mt-md"></signals>
+      <!-- <signals :signals="conSignals" class="q-mt-md"></signals> -->
     </q-card-main>
     <q-card-separator/>
     <q-card-actions align="around">
@@ -28,7 +36,7 @@
       ></q-btn>
       <q-btn @click="play" :disable="halted" color="secondary" icon="play_arrow"></q-btn>
       <q-btn @click="pause" :disable="halted" color="secondary" icon="pause"></q-btn>
-      <q-btn @click="$parent.emit('reset')" icon="replay"></q-btn>
+      <q-btn @click="$parent.emit('reset')" color="secondary" icon="replay"></q-btn>
     </q-card-actions>
   </q-card>
 </template>

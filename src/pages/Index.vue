@@ -19,6 +19,7 @@
           ></r-a-m-block>
         </div>
         <div class="col">
+          <bus :busBits="busBits" :cBus="busSignals"></bus>
           <control-block
             :cBus="cbSignals"
             :conSignals="conSignals"
@@ -27,8 +28,8 @@
             @setCBus="setCBus"
             @reset="reset"
             ref="CB"
+            class="q-mt-md"
           ></control-block>
-          <bus :busBits="busBits" :cBus="busSignals" class="q-mt-md"></bus>
         </div>
         <div class="col">
           <a-l-u-block :cBus="abSignals" :busBits="busBits" @pushToBus="pushToBus" ref="ALU"/>
@@ -115,9 +116,7 @@ export default {
       };
     },
     busSignals: function() {
-      return {
-        CLK: this.CLK
-      };
+      return { CLK: this.CLK };
     },
     abSignals: function() {
       return {

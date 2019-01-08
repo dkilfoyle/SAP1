@@ -1,12 +1,18 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>
-      <block-title title="Outpu" :message="message"></block-title>
+      <block-title title="Output" :message="message" :value="outBits.asInteger()"></block-title>
     </q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bitArray="bits"></bits>
-      <signals class="q-mt-md" :signals="cBus"></signals>
+      <div class="row gutter-sm">
+        <div class="col-auto">
+          <signals :signals="cBus"></signals>
+        </div>
+        <div class="col">
+          <bits :bitArray="outBits"></bits>
+        </div>
+      </div>
     </q-card-main>
   </q-card>
 </template>
@@ -19,7 +25,7 @@ export default {
   props: ["cBus", "busBits"],
   data() {
     return {
-      bits: new BitArray(8)
+      outBits: new BitArray(8)
     };
   },
   computed: {
@@ -39,7 +45,7 @@ export default {
   },
   watch: {
     "cBus.CLK": function(newCLK, oldCLK) {
-      if (newCLK === 1 && this.cBus.Lo === 0) this.bits.set(this.busBits);
+      if (newCLK === 1 && this.cBus.Lo === 0) this.outBits.set(this.busBits);
     }
   }
 };

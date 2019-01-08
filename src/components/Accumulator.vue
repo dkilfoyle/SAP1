@@ -1,12 +1,18 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>
-      <block-title title="Accumulator" :message="message"></block-title>
+      <block-title title="Accumulator" :message="message" :value="accBits.asInteger()"></block-title>
     </q-card-title>
     <q-card-separator/>
     <q-card-main>
-      <bits :bitArray="accBits"></bits>
-      <signals class="q-mt-md" :signals="cBus"></signals>
+      <div class="row gutter-sm">
+        <div class="col-auto">
+          <signals :signals="cBus"></signals>
+        </div>
+        <div class="col">
+          <bits :bitArray="accBits"></bits>
+        </div>
+      </div>
     </q-card-main>
   </q-card>
 </template>
