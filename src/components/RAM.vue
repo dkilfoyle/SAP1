@@ -22,7 +22,7 @@
       </div>
     </q-card-main>
     <q-card-actions>
-      <q-btn @click="edit" :color="primary" icon="play_arrow">Edit</q-btn>
+      <q-btn @click="edit" color="primary" icon="play_arrow">Edit</q-btn>
     </q-card-actions>
   </q-card>
 </template>
