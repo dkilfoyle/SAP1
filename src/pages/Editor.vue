@@ -18,121 +18,38 @@ import "codemirror/addon/hint/show-hint.css";
 import "codemirror/addon/comment/comment.js";
 import "codemirror/addon/fold/foldcode.js";
 import "codemirror/addon/fold/foldgutter.js";
+import "codemirror/addon/fold/foldgutter.css";
 
-// let CodeMirrorGrammar = require("../../node_modules/codemirror_grammar.js");
+var asmParser = require("./asm.pegjs");
 
-// var asmGrammar = {
-//   RegExpID: "RE::",
+var exampleCode = require("./example.asm");
 
-//   Style: {
-//     comment: "comment",
-//     opcode1arg: "keyword",
-//     opcode0arg: "keyword",
-//     sectionText: "string",
-//     sectionData: "string",
-//     datacode: "keyword",
-//     number: "number"
-//   },
+import asmMode from "./asm-mode.js";
 
-//   Lex: {
-//     comment: { type: "comment", tokens: [[";", null]] },
-//     number: [
-//       "RE::/0x[0-9a-fA-F]+L?/",
-//       "RE::/0b[01]+L?/",
-//       "RE::/0o[0-7]+L?/",
-//       "RE::/[1-9]\\d*(e[\\+\\-]?\\d+)?L?/",
-//       "RE::/0(?![\\dx])/"
-//     ],
-//     opcode1arg: { autocomplete: true, tokens: ["LDA", "ADD", "SUB"] },
-//     opcode0arg: { autocomplete: true, tokens: ["OUT", "HLT", "NOP"] },
-//     datacode: { autocomplete: true, tokens: ["db"] },
-//     sectionText: { autocomplete: true, tokens: ["section .text"] },
-//     sectionData: { autocomplete: true, tokens: ["section .data"] },
-//     other: "RE::/\\S+/",
-//     "invalid_asm:error": "Invalid ASM",
-//     "noargs:error": "Invalid number of arguments",
-//     "@outofplace:error": "$1 not expected here"
-//   },
+CodeMirror.defineMode("asm", asmMode);
 
-//   Syntax: {
-//     opline0: "opcode0arg+ (number.error noargs)?",
-//     opline1: "opcode1arg+ number+",
-//     text:
-//       "sectionText (sectionText.error @outofplace | comment | opline0 | opline1)*",
-//     data:
-//       "sectionData (datacode number | comment | opcode1arg.error @outofplace | opcode0arg.error @outofplace)*",
-//     asm: "text data+"
-//   },
-
-//   Parser: [["asm"]]
-// };
-
-// // 2. parse the grammar into a Codemirror syntax-highlight mode
-// var asmMode = CodeMirrorGrammar.getMode(asmGrammar);
-
-// // 3. use it with Codemirror
-// CodeMirror.defineMode("asm", asmMode);
-
-// // enable user-defined code folding in the specification (new feature)
-// asmMode.supportCodeFolding = true;
-// CodeMirror.registerHelper("fold", asmMode.foldType, asmMode.folder);
-
-// // enable user-defined code matching in the specification (new feature)
-// asmMode.supportCodeMatching = true;
-// asmMode.matcher.options = { maxHighlightLineLength: 1000 }; // default
-// CodeMirror.defineOption("matching", false, function(cm, val, old) {
-//   if (old && old !== CodeMirror.Init) {
-//     cm.off("cursorActivity", asmMode.matcher);
-//     asmMode.matcher.clear(cm);
-//   }
-//   if (val) {
-//     cm.on("cursorActivity", asmMode.matcher);
-//     asmMode.matcher(cm);
-//   }
-// });
-
-// // enable syntax lint-like validation in the grammar
-// asmMode.supportGrammarAnnotations = true;
-// CodeMirror.registerHelper("lint", "asm", asmMode.validator);
-
-// // enable user-defined autocompletion (if defined)
-// asmMode.supportAutoCompletion = true;
-// CodeMirror.commands["my_autocompletion"] = function(cm) {
-//   CodeMirror.showHint(cm, asmMode.autocompleter, {
-//     prefixMatch: true,
-//     caseInsensitiveMatch: false
-//   });
-// };
-// // this also works (takes priority if set)
-// asmMode.autocompleter.options = {
-//   prefixMatch: true,
-//   caseInsensitiveMatch: true
-// };
-
-var dictionary = [
-  "LDA",
-  "ADD",
-  "SUB",
-  "HLT",
-  "OUT",
-  "NOP",
-  "section .text",
-  "section .data"
-];
+var dictionary = {
+  text: ["LDA", "ADD", "SUB", "HLT", "OUT", "NOP", "section .data"],
+  data: ["db", "dw"],
+  none: ["section .text", "section .data"]
+};
 
 CodeMirror.registerHelper("hint", "dictionaryHint", function(editor) {
   var cur = editor.getCursor();
   var curLine = editor.getLine(cur.line);
   var start = cur.ch;
   var end = start;
+  var state = editor.getTokenAt(editor.getCursor()).state;
+  console.log(state);
   while (end < curLine.length && /[\w$]/.test(curLine.charAt(end))) ++end;
   while (start && /[\w$]/.test(curLine.charAt(start - 1))) --start;
   var curWord = start !== end && curLine.slice(start, end);
   var regex = new RegExp("^" + curWord, "i");
+  console.log(dictionary[state.section]);
   return {
     list: (!curWord
-      ? []
-      : dictionary.filter(function(item) {
+      ? dictionary[state.section]
+      : dictionary[state.section].filter(function(item) {
           return item.match(regex);
         })
     ).sort(),
@@ -145,27 +62,68 @@ CodeMirror.commands.autocomplete = function(cm) {
   CodeMirror.showHint(cm, CodeMirror.hint.dictionaryHint);
 };
 
-CodeMirror.registerHelper("fold", "include", function(cm, start) {
-  function hasInclude(line) {
-    if (line < cm.firstLine() || line > cm.lastLine()) return null;
-    var start = cm.getTokenAt(CodeMirror.Pos(line, 1));
-    if (!/\S/.test(start.string))
-      start = cm.getTokenAt(CodeMirror.Pos(line, start.end + 1));
-    if (start.string.slice(0, 7) === "section") return start.start + 7;
+CodeMirror.registerHelper("fold", "asm", function(cm, start) {
+  function hasSection(lineNo, line) {
+    var match = line && line.match(/^(section|segment)\s((\.text)|(\.data))+/);
+    return match;
   }
 
-  var startLine = start.line,
-    has = hasInclude(startLine);
-  if (has == null || hasInclude(startLine - 1) != null) return null;
-  for (var end = startLine; ; ) {
-    var next = hasInclude(end + 1);
-    if (next == null) break;
+  var firstLine = cm.getLine(start.line);
+  var has = hasSection(start.line, firstLine);
+  if (!has) return undefined;
+
+  var lastLineNo = cm.lastLine();
+  var end = start.line,
+    nextLine = cm.getLine(end + 1);
+  while (end < lastLineNo) {
+    if (hasSection(end + 1, nextLine)) break;
     ++end;
+    nextLine = cm.getLine(end + 1);
   }
+
   return {
-    from: CodeMirror.Pos(startLine, has + 1),
-    to: cm.clipPos(CodeMirror.Pos(end))
+    from: CodeMirror.Pos(start.line, firstLine.length),
+    to: CodeMirror.Pos(end, cm.getLine(end).length)
   };
+});
+
+CodeMirror.registerHelper("lint", "asm", function(text) {
+  var found = [];
+  var lines;
+  try {
+    // console.log(asmParser.parse(text));
+    lines = asmParser.parse(text);
+  } catch (e) {
+    console.log(e);
+    found.push({
+      from: CodeMirror.Pos(
+        e.location.start.line - 1,
+        e.location.start.column - 1
+      ),
+      to: CodeMirror.Pos(e.location.end.line - 1, e.location.end.column - 1),
+      message: e.message
+    });
+    return found;
+  }
+  console.log(lines);
+
+  // // state based errors
+  // var sectionState = "";
+  // var hasSectionText = false;
+  // var validOps = { text: ["lda","add","sub","hlt","nop","out"], data: ["db"]};
+  // for (var i = 0; i < lines.length; i++) {
+  //   if (lines[i].type === "section") {
+  //     sectionState = lines[i].section;
+  //     if (lines[i].section === "text") hasSectionText = true;
+  //   }
+  //   if (!validOps[sectionState].includes(lines[i].op)) found.push({
+  //     from
+  //   })
+  //   if (lines[i].type === "op") {
+  //   }
+  // }
+
+  return found;
 });
 
 import "codemirror/lib/codemirror.css";
@@ -177,28 +135,19 @@ export default {
   },
   data() {
     return {
-      code: `section .text
-  LDA 0x0a ; load accumulator
-  ADD 0x0b
-  ADD 0x0c
-  SUB 0x0d
-  OUT
-  HLT
-section .data
-  ; line comment
-  db 32
-  db 28
-  db 16`,
+      code: exampleCode,
       cmOptions: {
-        // codemirror options
-        tabSize: 4,
+        tabSize: 2,
         mode: "asm",
         theme: "base16-dark",
         lineNumbers: true,
         line: true,
         extraKeys: {
           "Ctrl-Space": "autocomplete",
-          "Ctrl-L": "toggleComment"
+          "Ctrl-L": "toggleComment",
+          "Ctrl-Q": function(cm) {
+            cm.foldCode(cm.getCursor());
+          }
         },
         lint: true,
         gutters: [

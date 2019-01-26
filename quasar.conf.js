@@ -15,6 +15,7 @@ module.exports = function(ctx) {
     supportIE: false,
     build: {
       scopeHoisting: true,
+      devtool: "source-map",
       // vueRouterMode: 'history',
       // vueCompiler: true,
       // gzip: true,
@@ -25,6 +26,19 @@ module.exports = function(ctx) {
           enforce: "pre",
           test: /\.(js|vue)$/,
           loader: "eslint-loader",
+          exclude: /node_modules/
+        });
+        cfg.module.rules.push({
+          enforce: "pre",
+          test: /\.pegjs$/,
+          // loader: "pegjs-loader?trace=true",
+          loader: "pegjs-loader",
+          exclude: /node_modules/
+        });
+        cfg.module.rules.push({
+          enforce: "pre",
+          test: /\.asm$/,
+          loader: "raw-loader",
           exclude: /node_modules/
         });
       }
@@ -63,7 +77,11 @@ module.exports = function(ctx) {
         "QCheckbox",
         "QChip",
         "QAlert",
-        "QProgress"
+        "QProgress",
+        "QTabs",
+        "QTab",
+        "QTabPane",
+        "QRouteTab"
       ],
       directives: ["Ripple"],
       // Quasar plugins
@@ -72,7 +90,7 @@ module.exports = function(ctx) {
       // i18n: 'de' // Quasar language
     },
     // animations: 'all' --- includes all animations
-    animations: ["fadeIn", "fadeOut"],
+    animations: ["fadeIn", "fadeOut", "slideInRight", "slideOutLeft"],
     ssr: {
       pwa: false
     },

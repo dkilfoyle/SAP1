@@ -1,95 +1,68 @@
 {
-  function filledArray(count, value) {
-    return Array.apply(null, new Array(count))
-      .map(function() { return value; });
-  }
-
-  function extractOptional(optional, index) {
-    return optional ? optional[index] : null;
-  }
-
-  function extractList(list, index) {
-    return list.map(function(element) { return element[index]; });
-  }
-
-  function buildList(head, tail, index) {
-    return [head].concat(extractList(tail, index));
-  }
-
-  function optionalList(value) {
-    return value !== null ? value : [];
-  }
+    var sectionState = "";
+    var hasText = false;
+    var validOps = { text: ["lda","add","sub","hlt","nop","out"], data: ["db"] };
+    var validNumArgs = { "0": ["hlt","nop","out"], "1": ["lda","add","sub", "db"] };
+    function checkInstruction(i) {
+        if (sectionState === "") error("No section statement");
+        if (!validOps[sectionState].includes(i.op)) error("Invalid op for this section"); 
+        if (!validNumArgs[i.args.length].includes(i.op)) error("Invalid number of args"); 
+    }
 }
 
 start = 
-  __ program:Program __ { return program }
-  
-Program =
-  body:SourceElements? { return {type: "program", body: optionalList(body) } }
-  
-SourceElements = 
-  head:SectionText tail:(SectionData)? { console.log(tail); return { text: head, data: tail} }
+    first:line rest:(nl l:line {return l})* { return [first].concat(rest) }
 
-SectionText = 
-  __ "section .text" __ instructions:(instruction)* {return optionalList(instructions) }
-    
-SectionData =
-  __ "section .data" __ instructions:(instruction)* { console.log(optionalList(instructions)); return optionalList(instructions) }
+line =
+    _ i:instruction eol { checkInstruction(i); return i } /
+    _ s:section eol { return s } /
+    _ l:label eol { return l } /
+    _ eol { return {type:"skip"} } / 
+    _ EOF { if (!hasText) error("Missing section .text"); console.log("hastext", hasText); return { type: "skip" }; }
 
-SourceElement =
-  instruction / 
-  label
-  
-Comment = 
-  ";" (!EOL .)* 
-  
-label = 
-  id:identifier ":" __ {return {type:"label", name: id.name, line: location().start.line } }
-  
-identifier = 
-  !opcode head:[.a-zA-Z] tail:[a-zA-Z0-9]+ { return {type: "identifier", name: head + tail.join("") }; }
+instruction =
+    i:opcode _ n:number* eol { return { type: "op", op: i.toLowerCase(), args: n } }
+    // i:instruction0arg { return { type: "op", op: i.toLowerCase() } }
 
-instruction "instruction" = 
-  __ oc:opcode _ al:argumentlist? { return {type: "instruction", opcode: oc.toUpperCase(), arglist: al, line: location().start.line }}
+opcode = "LDA"i / "ADD"i / "SUB"i / "DB"i / "HLT"i / "OUT"i / "NOP"i
 
-opcode =
-  "MOV"i / "CALL"i / "PUSH"i / "INC"i / "CMP"i / "JNZ"i / "POP"i / "RET"i / "JMP"i / "HLT"i / "DB"
-  
-argumentlist = 
-  head:argument 
-  tail:(__ ',' __ a:argument {return a})* 
-  { return Array.prototype.concat.apply(head,tail) }
-  
-argument = 
-  register /
-  number /
-  identifier / 
-  string /
-  '[' r:register ']' { r.type = "address"; return r }
+instruction1arg = 
+    "LDA"i / "ADD"i / "SUB"i / "DB"i
 
-string =
-  '"' str:stringcharacter* '"' { return {type: "string", value: str.join("") } }
-  
-stringcharacter
-  = !('"' / "\\" / EOL) . { return text() }
-    
-register = 
-  c:registerName {return {type: "register", value: text()} }
-  
-registerName = 
-  "A" / "B" / "C" / "D" 
-  
-number =
-  n:[0-9]+ { return {type: "number", value: parseInt(n.join(""))} }
+instruction0arg = 
+    "HLT"i / "OUT"i / "NOP"i
 
-EOL = 
-  '\r'? '\n' 
+section = 
+    "section .text" { sectionState = "text"; hasText = true; return { type: "section", section: "text" } } /
+    "section .data" { sectionState = "data"; return { type: "section", section: "data" } }
 
-WhiteSpace =
-  [ \t\n\r]
+label "label" = 
+    l:labelname ":" { return { type: "label", label: l } }
+
+labelname = n:[._a-zA-Z0-9]+ { return n.join("") }
+
+// Fragments
+
+sep = _ "," _
+eol = _ comment?
+comment = ";" [^\r\n]*
+
+// Numbers
+number "number" = binLiteral / hexLiteral / decLiteral
+
+decLiteral "decimal literal" =
+    digits:[0-9]+ { return parseInt(digits.join(""), 10); }
+
+hexLiteral "hex literal" =
+    '0x' hexits:[0-9a-fA-F]+ { return parseInt(hexits.join(""), 16); }
+
+binLiteral "binary literal" =
+    '0b' bits:[0-1]+ { return parseInt(bits.join(""), 2); }
+
+// Whitespace
+__  = ws+
+_   = ws*
+ws  = [ \t]
+nl  = "\r"? "\n"
   
-__ = 
-  (WhiteSpace / EOL / Comment)*
-  
-_ =
-  WhiteSpace*
+EOF = !.

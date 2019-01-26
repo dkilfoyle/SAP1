@@ -1,7 +1,9 @@
 <template>
   <q-card :color="isActive? 'grey-2' : 'white'" text-color="black">
     <q-card-title>
-      <block-title title="Output" :message="message" :value="outBits.asInteger()"></block-title>
+      <span>Output</span>
+      <!-- <block-title title="Output" :message="message" :value="outBits.asInteger()"/> -->
+      <seven-seg :value="outBits.toString(10)"/>
     </q-card-title>
     <q-card-separator/>
     <q-card-main>
@@ -19,9 +21,11 @@
 
 <script>
 import BitArray from "./BitArray";
+import SevenSeg from "./SevenSeg";
 
 export default {
   name: "OutputRegister",
+  components: { SevenSeg },
   props: ["cBus", "busBits"],
   data() {
     return {

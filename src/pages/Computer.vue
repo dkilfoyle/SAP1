@@ -64,6 +64,7 @@ export default {
   },
   data() {
     return {
+      selectedTab: "cpu",
       busBits: new BitArray(8),
       maxCounter: 0,
       CLK: 1,

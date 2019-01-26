@@ -20,13 +20,11 @@
 
 <script>
 import BitArray from "./BitArray";
-import SevenSegmentDisplay from "vue-seven-segment-display";
 
 export default {
   name: "PC",
   props: ["cBus", "maxCounter"],
   // components: { Signals, Bits, BlockTitle },
-  components: { SevenSegmentDisplay },
   data() {
     return {
       pcBits: new BitArray(4)

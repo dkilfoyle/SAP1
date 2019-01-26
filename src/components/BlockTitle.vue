@@ -18,8 +18,10 @@
 </template>
 
 <script>
+import SevenSeg from "./SevenSeg";
 export default {
   name: "BlockTitle",
+  components: { SevenSeg },
   props: ["message", "title", "value"],
   data() {
     return {};
