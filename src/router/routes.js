@@ -1,10 +1,13 @@
+import Computer from "../pages/Computer";
+import Editor from "../pages/Editor";
+
 const routes = [
   {
     path: "/",
     component: () => import("layouts/MyLayout.vue"),
     children: [
-      { path: "cpu", component: () => import("pages/Computer.vue") },
-      { path: "code", component: () => import("pages/Editor.vue") }
+      { path: "/cpu", component: Computer },
+      { path: "code", component: Editor }
     ]
   }
 ];

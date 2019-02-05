@@ -4,27 +4,26 @@
     var validOps = { text: ["lda","add","sub","hlt","nop","out"], data: ["db"] };
     var validNumArgs = { "0": ["hlt","nop","out"], "1": ["lda","add","sub", "db"] };
     function checkInstruction(i) {
-        if (sectionState === "") error("No section statement");
+        if (sectionState === "") error("Missing section");
         if (!validOps[sectionState].includes(i.op)) error("Invalid op for this section"); 
         if (!validNumArgs[i.args.length].includes(i.op)) error("Invalid number of args"); 
     }
 }
 
 start = 
-    first:line rest:(nl l:line {return l})* { return [first].concat(rest) }
+    first:line rest:(nl l:line {return l})* { if (!hasText) error("Missing section .text"); return [first].concat(rest) }
 
 line =
     _ i:instruction eol { checkInstruction(i); return i } /
     _ s:section eol { return s } /
     _ l:label eol { return l } /
-    _ eol { return {type:"skip"} } / 
-    _ EOF { if (!hasText) error("Missing section .text"); console.log("hastext", hasText); return { type: "skip" }; }
+    _ eol { return {type:"skip"} }
 
 instruction =
     i:opcode _ n:number* eol { return { type: "op", op: i.toLowerCase(), args: n } }
     // i:instruction0arg { return { type: "op", op: i.toLowerCase() } }
 
-opcode = "LDA"i / "ADD"i / "SUB"i / "DB"i / "HLT"i / "OUT"i / "NOP"i
+opcode "opcode" = "LDA"i / "ADD"i / "SUB"i / "DB"i / "HLT"i / "OUT"i / "NOP"i
 
 instruction1arg = 
     "LDA"i / "ADD"i / "SUB"i / "DB"i
@@ -32,7 +31,7 @@ instruction1arg =
 instruction0arg = 
     "HLT"i / "OUT"i / "NOP"i
 
-section = 
+section "section" = 
     "section .text" { sectionState = "text"; hasText = true; return { type: "section", section: "text" } } /
     "section .data" { sectionState = "data"; return { type: "section", section: "data" } }
 
@@ -62,7 +61,5 @@ binLiteral "binary literal" =
 // Whitespace
 __  = ws+
 _   = ws*
-ws  = [ \t]
-nl  = "\r"? "\n"
-  
-EOF = !.
+ws "WS" = [ \t]
+nl "NL" = ("\r"? "\n") 

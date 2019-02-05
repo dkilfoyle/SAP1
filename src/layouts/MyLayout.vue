@@ -19,12 +19,7 @@
     </q-layout-header>
 
     <q-page-container>
-      <transition
-        appear
-        enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut"
-        mode="out-in"
-      >
+      <transition appear enter-active-class="animated fadeIn" mode="out-in">
         <router-view/>
       </transition>
     </q-page-container>
